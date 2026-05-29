@@ -6,1032 +6,978 @@
 <title>Yaself Fotobox – Die Fotobox, über die alle reden</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Paytone+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --yellow: #FFD600;
-    --pink: #FF3CAC;
-    --purple: #7B2FBE;
-    --coral: #FF6B6B;
-    --cyan: #00D4FF;
-    --green: #06FFA5;
-    --dark: #0F0E17;
-    --white: #FFFFFF;
-    --grad1: linear-gradient(135deg, #FF3CAC 0%, #784BA0 50%, #2B86C5 100%);
-    --grad2: linear-gradient(135deg, #FFD600 0%, #FF6B6B 100%);
-    --grad3: linear-gradient(135deg, #06FFA5 0%, #00D4FF 100%);
-    --grad4: linear-gradient(135deg, #FF3CAC 0%, #FF6B6B 100%);
+    --black:   #0A0A0A;
+    --white:   #FFFFFF;
+    --gold:    #C4A35A;
+    --gold-lt: #D4B96A;
+    --gold-dk: #9A7A3A;
+    --grey:    #F5F4F2;
+    --grey-md: #888888;
+    --grey-dk: #333333;
+    --border:  rgba(196,163,90,0.25);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--white);
-    color: var(--dark);
+    color: var(--black);
     overflow-x: hidden;
   }
 
-  /* ─── FLASH OVERLAY ─── */
-  #flash-overlay {
-    position: fixed; inset: 0;
-    background: white;
-    z-index: 9999;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.08s ease;
+  /* ── PROGRESS ── */
+  #progress {
+    position: fixed; top:0; left:0; right:0; height:2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    z-index: 10000;
+    transition: transform 0.1s linear;
   }
-  #flash-overlay.flash { opacity: 1; }
 
-  /* ─── NAV ─── */
+  /* ── FLASH ── */
+  #flash {
+    position: fixed; inset:0; background:white; opacity:0;
+    pointer-events:none; z-index:9999;
+    transition: opacity 0.06s;
+  }
+  #flash.on { opacity: 1; }
+
+  /* ── CURSOR DOT ── */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.08s, width 0.2s, height 0.2s, opacity 0.2s;
+  }
+  .cursor-ring {
+    width: 34px; height: 34px;
+    border: 1.5px solid rgba(196,163,90,0.5);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.18s ease, width 0.25s, height 0.25s, opacity 0.25s;
+  }
+
+  /* ── NAV ── */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-    padding: 18px 5%;
-    display: flex; align-items: center; justify-content: space-between;
-    transition: all 0.3s ease;
-    background: transparent;
+    position: fixed; top:0; left:0; right:0; z-index:1000;
+    padding: 28px 6%;
+    display: flex; align-items:center; justify-content:space-between;
+    transition: padding 0.4s ease, background 0.4s ease;
   }
   nav.scrolled {
-    background: rgba(15,14,23,0.95);
-    backdrop-filter: blur(12px);
-    padding: 12px 5%;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    background: rgba(10,10,10,0.96);
+    backdrop-filter: blur(16px);
+    padding: 16px 6%;
+    border-bottom: 1px solid rgba(196,163,90,0.12);
   }
-  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo {
+    display: flex; align-items:center; gap:14px;
+    text-decoration:none;
+  }
   .nav-logo img {
-    width: 44px; height: 44px;
+    width: 40px; height:40px;
     border-radius: 50%;
-    border: 2px solid var(--yellow);
     object-fit: cover;
+    border: 1px solid var(--border);
+    filter: brightness(1.05);
   }
   .nav-logo span {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 500;
     color: var(--white);
-    letter-spacing: -0.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
-  .nav-logo span em { color: var(--yellow); font-style: normal; }
-  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links {
+    display: flex; align-items:center; gap:36px;
+  }
   .nav-links a {
-    color: rgba(255,255,255,0.85);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
     text-decoration: none;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.3px;
-    transition: color 0.2s;
+    transition: color 0.3s;
   }
-  .nav-links a:hover { color: var(--yellow); }
-  .btn-nav {
-    background: var(--yellow);
-    color: var(--dark) !important;
-    padding: 10px 22px;
-    border-radius: 50px;
-    font-weight: 900 !important;
-    transition: transform 0.2s, box-shadow 0.2s !important;
-    box-shadow: 0 4px 20px rgba(255,214,0,0.4);
+  .nav-links a:hover { color: var(--gold); }
+  .nav-btn {
+    display: inline-flex; align-items:center; gap:8px;
+    padding: 11px 26px;
+    border: 1px solid var(--gold);
+    color: var(--gold) !important;
+    border-radius: 2px;
+    font-size: 0.75rem !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 600 !important;
+    transition: background 0.3s, color 0.3s !important;
   }
-  .btn-nav:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(255,214,0,0.6) !important; color: var(--dark); }
+  .nav-btn:hover { background: var(--gold) !important; color: var(--black) !important; }
 
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
-  .hamburger span { display: block; width: 26px; height: 3px; background: white; border-radius: 3px; transition: all 0.3s; }
+  /* ── HAMBURGER ── */
+  .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; z-index:1001; }
+  .hamburger span { display:block; width:24px; height:1.5px; background:white; transition:all 0.3s; }
+  .mobile-menu {
+    position:fixed; inset:0; z-index:999;
+    background: var(--black);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:40px;
+    transform:translateX(100%);
+    transition:transform 0.4s ease;
+  }
+  .mobile-menu.open { transform:translateX(0); }
+  .mobile-menu a {
+    font-family:'Cormorant Garamond',serif;
+    font-size:2rem; font-weight:400;
+    color:rgba(255,255,255,0.75);
+    text-decoration:none; letter-spacing:3px;
+    text-transform:uppercase;
+    transition:color 0.3s;
+  }
+  .mobile-menu a:hover { color:var(--gold); }
+  .mobile-close { position:absolute;top:28px;right:28px;font-size:1.5rem;color:white;cursor:pointer;background:none;border:none; }
 
-  /* ─── HERO ─── */
+  /* ── HERO ── */
   #hero {
-    min-height: 100vh;
-    background: var(--dark);
-    position: relative;
-    overflow: hidden;
-    display: flex; align-items: center;
+    min-height:100vh;
+    background: var(--black);
+    display:flex; align-items:center;
+    position:relative; overflow:hidden;
   }
-  .hero-bg {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 20% 50%, rgba(123,47,190,0.4) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(255,60,172,0.35) 0%, transparent 55%),
-                radial-gradient(ellipse at 60% 80%, rgba(0,212,255,0.25) 0%, transparent 50%);
+  .hero-lines {
+    position:absolute; inset:0; pointer-events:none;
+    overflow:hidden;
   }
-  .hero-particles {
-    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+  .hero-line {
+    position:absolute;
+    background: rgba(196,163,90,0.06);
+    animation: line-drift 20s ease-in-out infinite;
   }
-  .particle {
-    position: absolute;
-    border-radius: 50%;
-    animation: float-up linear infinite;
-    opacity: 0;
+  @keyframes line-drift {
+    0%,100% { transform: translateX(0); }
+    50% { transform: translateX(30px); }
   }
-  @keyframes float-up {
-    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 0.6; }
-    100% { transform: translateY(-20vh) rotate(720deg); opacity: 0; }
+  .hero-grain {
+    position:absolute; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none; opacity:0.4;
   }
-  .confetti-piece {
-    position: absolute;
-    width: 10px; height: 10px;
-    animation: confetti-fall linear infinite;
-    opacity: 0;
-  }
-  @keyframes confetti-fall {
-    0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
-  }
-  .hero-content {
-    position: relative; z-index: 2;
-    max-width: 1200px; margin: 0 auto;
-    padding: 120px 5% 80px;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 60px; align-items: center;
-  }
-  .hero-text { }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(255,214,0,0.15);
-    border: 1px solid rgba(255,214,0,0.4);
-    border-radius: 50px;
-    padding: 8px 18px;
-    margin-bottom: 24px;
-    animation: hero-badge-in 0.8s ease forwards;
-  }
-  .hero-badge span { font-size: 0.85rem; font-weight: 700; color: var(--yellow); letter-spacing: 1px; text-transform: uppercase; }
-  .hero-badge .dot { width: 8px; height: 8px; background: var(--yellow); border-radius: 50%; animation: pulse-dot 1.5s infinite; }
-  @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:0.7} }
-  @keyframes hero-badge-in { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
 
-  .hero-title {
-    font-family: 'Paytone One', sans-serif;
-    font-size: clamp(2.6rem, 5vw, 4.2rem);
-    line-height: 1.1;
-    color: var(--white);
-    margin-bottom: 20px;
-    animation: hero-title-in 0.9s 0.2s ease both;
+  .hero-content {
+    position:relative; z-index:2;
+    max-width:1280px; margin:0 auto;
+    padding: 130px 6% 90px;
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:80px; align-items:center;
   }
-  @keyframes hero-title-in { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-  .hero-title .highlight {
-    background: var(--grad2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .hero-eyebrow {
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:28px;
+    opacity:0; animation: fade-up 0.9s 0.2s ease both;
+  }
+  .hero-eyebrow-line { width:40px; height:1px; background:var(--gold); }
+  .hero-eyebrow span {
+    font-size:0.72rem; font-weight:500;
+    letter-spacing:3px; text-transform:uppercase;
+    color:var(--gold);
+  }
+  .hero-title {
+    font-family:'Cormorant Garamond',serif;
+    font-size: clamp(3rem,5.5vw,5rem);
+    font-weight:300;
+    line-height:1.08;
+    color:var(--white);
+    margin-bottom:24px;
+    opacity:0; animation: fade-up 0.9s 0.35s ease both;
+  }
+  .hero-title em {
+    font-style:italic;
+    color:var(--gold);
   }
   .hero-sub {
-    font-size: 1.15rem;
-    color: rgba(255,255,255,0.7);
-    line-height: 1.7;
-    margin-bottom: 36px;
-    animation: hero-title-in 0.9s 0.35s ease both;
+    font-size:1rem;
+    line-height:1.8;
+    color:rgba(255,255,255,0.5);
+    max-width:440px;
+    margin-bottom:44px;
+    font-weight:300;
+    opacity:0; animation:fade-up 0.9s 0.5s ease both;
   }
-  .hero-buttons {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    animation: hero-title-in 0.9s 0.5s ease both;
+  .hero-actions {
+    display:flex; gap:16px; flex-wrap:wrap;
+    opacity:0; animation:fade-up 0.9s 0.65s ease both;
   }
-  .btn-primary {
-    background: var(--grad2);
-    color: white;
-    padding: 16px 32px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 1rem;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px;
-    box-shadow: 0 8px 32px rgba(255,107,107,0.5);
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: none; cursor: pointer;
+  @keyframes fade-up {
+    from { opacity:0; transform:translateY(28px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-  .btn-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 40px rgba(255,107,107,0.65); }
-  .btn-secondary {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    padding: 16px 32px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px;
-    border: 2px solid rgba(255,255,255,0.25);
-    transition: all 0.2s;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
+  .btn-dark {
+    display:inline-flex; align-items:center; gap:10px;
+    background: var(--white);
+    color: var(--black);
+    padding:14px 32px;
+    font-size:0.78rem; font-weight:600;
+    letter-spacing:1.5px; text-transform:uppercase;
+    text-decoration:none;
+    border:none; cursor:pointer;
+    transition:background 0.3s, color 0.3s, transform 0.3s;
   }
-  .btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+  .btn-dark:hover { background:var(--gold); color:var(--black); transform:translateY(-2px); }
+  .btn-outline-white {
+    display:inline-flex; align-items:center; gap:10px;
+    background:transparent;
+    color:rgba(255,255,255,0.7);
+    padding:14px 32px;
+    font-size:0.78rem; font-weight:500;
+    letter-spacing:1.5px; text-transform:uppercase;
+    text-decoration:none;
+    border:1px solid rgba(255,255,255,0.2);
+    transition:border-color 0.3s, color 0.3s;
+    cursor:pointer;
+  }
+  .btn-outline-white:hover { border-color:var(--gold); color:var(--gold); }
 
-  .hero-stats {
-    display: flex; gap: 24px; margin-top: 44px; flex-wrap: wrap;
-    animation: hero-title-in 0.9s 0.65s ease both;
+  .hero-numbers {
+    display:flex; gap:40px; margin-top:56px; padding-top:40px;
+    border-top:1px solid rgba(255,255,255,0.08);
+    opacity:0; animation:fade-up 0.9s 0.8s ease both;
+    flex-wrap:wrap;
   }
-  .hero-stat { text-align: center; }
-  .hero-stat .num {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 2rem;
-    background: var(--grad2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
+  .hero-num .val {
+    font-family:'Cormorant Garamond',serif;
+    font-size:2.4rem; font-weight:400;
+    color:var(--white); line-height:1;
   }
-  .hero-stat .lbl { font-size: 0.8rem; color: rgba(255,255,255,0.55); font-weight: 600; margin-top: 4px; }
-  .stat-divider { width: 1px; height: 50px; background: rgba(255,255,255,0.15); align-self: center; }
+  .hero-num .val em { color:var(--gold); font-style:normal; }
+  .hero-num .key {
+    font-size:0.72rem; font-weight:500;
+    letter-spacing:1.5px; text-transform:uppercase;
+    color:rgba(255,255,255,0.35);
+    margin-top:6px;
+  }
 
-  /* ─── FOTOBOX ANIMATION ─── */
-  .hero-visual {
-    position: relative;
-    display: flex; justify-content: center; align-items: center;
-    animation: hero-title-in 1s 0.4s ease both;
+  /* ── FOTOBOX DEVICE ── */
+  .hero-device-wrap {
+    display:flex; justify-content:center; align-items:center;
+    opacity:0; animation:fade-up 1s 0.55s ease both;
+    position:relative;
   }
-  .fotobox-wrapper {
-    position: relative;
-    width: 320px;
+  .device {
+    width:260px;
+    background: #111;
+    border-radius:20px;
+    padding:18px;
+    border:1px solid rgba(196,163,90,0.15);
+    box-shadow:
+      0 40px 80px rgba(0,0,0,0.8),
+      0 0 0 1px rgba(255,255,255,0.04),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    position:relative; z-index:2;
   }
-  .fotobox-device {
-    width: 280px; margin: 0 auto;
-    background: linear-gradient(180deg, #1e1e2e 0%, #2a2a3e 100%);
-    border-radius: 28px;
-    padding: 20px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.12);
-    position: relative;
-    z-index: 2;
+  .device-screen {
+    background:#000;
+    border-radius:12px;
+    overflow:hidden;
+    aspect-ratio:3/4;
+    position:relative;
   }
-  .fotobox-glow {
-    position: absolute; inset: -20px;
-    background: radial-gradient(ellipse, rgba(255,60,172,0.3) 0%, transparent 70%);
-    border-radius: 50px;
-    z-index: 1;
-    animation: glow-pulse 2.5s ease-in-out infinite;
+  .device-screen img {
+    width:100%;height:100%;object-fit:cover;
+    transition:opacity 0.1s;
   }
-  @keyframes glow-pulse { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+  .device-flash {
+    position:absolute;inset:0;background:white;opacity:0;
+    pointer-events:none; border-radius:12px;
+    transition:opacity 0.06s;
+  }
+  .device-flash.on { opacity:1; }
+  .device-footer {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 4px 4px;
+  }
+  .device-led {
+    width:7px;height:7px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 8px var(--gold);
+    animation:led 2s infinite;
+  }
+  @keyframes led { 0%,100%{opacity:1}50%{opacity:0.2} }
+  .shutter {
+    width:46px;height:46px;border-radius:50%;
+    background:#222;
+    border:2px solid #333;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.6);
+    cursor:pointer;
+    position:relative;
+    transition:transform 0.1s;
+  }
+  .shutter::after {
+    content:'';
+    position:absolute;inset:6px;border-radius:50%;
+    background:radial-gradient(circle,#2a2a2a,#1a1a1a);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.8);
+  }
+  .shutter:active,.shutter.click { transform:scale(0.9); }
+  .device-led2 { width:7px;height:7px;border-radius:50%;background:#444; }
 
-  .fotobox-screen {
-    background: #000;
-    border-radius: 16px;
-    overflow: hidden;
-    aspect-ratio: 3/4;
-    position: relative;
-  }
-  .fotobox-screen img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: opacity 0.15s ease;
-  }
-  .fotobox-flash {
-    position: absolute; inset: 0;
-    background: white;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.08s;
-    border-radius: 16px;
-  }
-  .fotobox-flash.flashing { opacity: 1; }
-
-  .fotobox-controls {
-    display: flex; justify-content: center; align-items: center; gap: 14px;
-    margin-top: 16px;
-  }
-  .shutter-btn {
-    width: 52px; height: 52px;
-    background: radial-gradient(circle, #fff 30%, #ddd 100%);
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.5);
-    cursor: pointer;
-    transition: transform 0.1s;
-    border: none;
-    position: relative;
-  }
-  .shutter-btn::after {
-    content: '';
-    position: absolute; inset: 6px;
-    background: radial-gradient(circle, #eee 30%, #aaa 100%);
-    border-radius: 50%;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-  }
-  .shutter-btn:active { transform: scale(0.92); }
-  .shutter-btn.clicking { transform: scale(0.92); }
-  .fotobox-led {
-    width: 12px; height: 12px;
-    background: var(--green);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--green);
-    animation: led-blink 1.8s infinite;
-  }
-  @keyframes led-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  /* Photo strip */
+  /* photo strip */
   .photo-strip {
-    position: absolute;
-    right: -80px; top: 50%;
-    transform: translateY(-50%);
-    width: 72px;
-    background: white;
-    border-radius: 6px;
-    padding: 6px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-    display: flex; flex-direction: column; gap: 4px;
-    z-index: 5;
-    animation: strip-slide 0.4s ease-out;
+    position:absolute;
+    right:-64px; top:50%;
+    transform:translateY(-50%);
+    width:58px;
+    background:var(--white);
+    border-radius:4px;
+    padding:5px;
+    box-shadow:0 12px 36px rgba(0,0,0,0.5);
+    z-index:5;
   }
-  @keyframes strip-slide { from{transform:translateY(-50%) translateX(-30px);opacity:0} to{transform:translateY(-50%) translateX(0);opacity:1} }
-  .strip-photo {
-    width: 100%; aspect-ratio: 1;
-    background: #eee;
-    border-radius: 3px;
-    overflow: hidden;
+  .strip-img {
+    width:100%;aspect-ratio:1;
+    border-radius:2px;overflow:hidden;margin-bottom:4px;
   }
-  .strip-photo img { width:100%; height:100%; object-fit:cover; }
-  .strip-label {
-    text-align: center;
-    font-size: 0.45rem;
-    font-weight: 800;
-    color: var(--dark);
-    padding: 4px 0 2px;
-    letter-spacing: 0.5px;
+  .strip-img img { width:100%;height:100%;object-fit:cover; }
+  .strip-name {
+    text-align:center;font-size:0.38rem;
+    font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:var(--black);
+    padding:3px 0;
+    font-family:'Cormorant Garamond',serif;
+  }
+  /* glow ring */
+  .device-glow {
+    position:absolute;
+    width:200px;height:200px;
+    background:radial-gradient(circle,rgba(196,163,90,0.18),transparent 70%);
+    border-radius:50%;
+    top:50%;left:50%;transform:translate(-50%,-50%);
+    z-index:1;
+    animation:glow 3s ease-in-out infinite;
+  }
+  @keyframes glow { 0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)} }
+
+  /* ── MARQUEE ── */
+  .marquee {
+    background:var(--gold);
+    padding:13px 0;overflow:hidden;
+  }
+  .marquee-inner {
+    display:flex;
+    animation:scroll 28s linear infinite;
+    width:max-content;
+  }
+  @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .m-item {
+    display:flex;align-items:center;gap:10px;
+    padding:0 36px;
+    font-size:0.7rem;font-weight:600;
+    letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--black); white-space:nowrap;
+  }
+  .m-sep { font-size:0.5rem;opacity:0.5; }
+
+  /* ── SECTIONS COMMON ── */
+  section { padding:110px 6%; }
+  .section-tag {
+    display:inline-flex;align-items:center;gap:12px;
+    font-size:0.7rem;font-weight:600;
+    letter-spacing:3px;text-transform:uppercase;
+    color:var(--gold);margin-bottom:20px;
+  }
+  .section-tag::before { content:'';width:30px;height:1px;background:var(--gold); }
+  .section-heading {
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2.2rem,4vw,3.5rem);
+    font-weight:400;line-height:1.12;
+    margin-bottom:20px;
+  }
+  .section-body {
+    font-size:0.95rem;line-height:1.85;
+    color:var(--grey-md);font-weight:300;
+  }
+  .gold-line {
+    width:60px;height:1px;
+    background:var(--gold);
+    margin:28px 0;
   }
 
-  /* Floating emoji */
-  .floating-emoji {
-    position: absolute;
-    font-size: 2rem;
-    animation: emoji-float 3s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 6;
+  /* reveal */
+  .r {
+    opacity:0;transform:translateY(32px);
+    transition:opacity 0.8s ease, transform 0.8s ease;
   }
-  @keyframes emoji-float { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-12px) rotate(5deg)} }
+  .r.in { opacity:1;transform:none; }
+  .r.d1 { transition-delay:0.1s; }
+  .r.d2 { transition-delay:0.2s; }
+  .r.d3 { transition-delay:0.3s; }
+  .r.d4 { transition-delay:0.4s; }
+  .r.d5 { transition-delay:0.5s; }
 
-  /* ─── MARQUEE ─── */
-  .marquee-section {
-    background: var(--yellow);
-    padding: 14px 0;
-    overflow: hidden;
-    position: relative;
-    z-index: 3;
+  /* ── ABOUT ── */
+  #about { background:var(--grey); }
+  .about-wrap {
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:80px;align-items:center;
   }
-  .marquee-track {
-    display: flex;
-    gap: 0;
-    animation: marquee-scroll 22s linear infinite;
-    width: max-content;
+  .about-img-col { position:relative; }
+  .about-main {
+    width:100%;border-radius:2px;
+    overflow:hidden;aspect-ratio:4/5;
+    box-shadow:0 30px 60px rgba(0,0,0,0.12);
   }
-  @keyframes marquee-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-  .marquee-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0 32px;
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1rem;
-    color: var(--dark);
-    white-space: nowrap;
+  .about-main img { width:100%;height:100%;object-fit:cover; }
+  .about-badge {
+    position:absolute;
+    bottom:-28px;right:-28px;
+    width:140px;height:140px;
+    background:var(--black);
+    border-radius:2px;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    box-shadow:0 16px 40px rgba(0,0,0,0.25);
+    border:1px solid rgba(196,163,90,0.2);
   }
-  .marquee-dot { font-size: 1.4rem; }
-
-  /* ─── SECTION COMMONS ─── */
-  section { padding: 100px 5%; }
-  .section-label {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 0.8rem; font-weight: 800; letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
+  .about-badge .b-num {
+    font-family:'Cormorant Garamond',serif;
+    font-size:2.2rem;color:var(--gold);line-height:1;
   }
-  .section-label::before, .section-label::after {
-    content: ''; display: block; width: 28px; height: 2px;
+  .about-badge .b-txt {
+    font-size:0.62rem;font-weight:600;
+    letter-spacing:1.5px;text-transform:uppercase;
+    color:rgba(255,255,255,0.5);
+    margin-top:6px;text-align:center;
   }
-  .section-title {
-    font-family: 'Paytone One', sans-serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.15;
-    margin-bottom: 16px;
-  }
-  .section-sub {
-    font-size: 1.05rem;
-    color: #666;
-    line-height: 1.7;
-    max-width: 560px;
-  }
-
-  /* reveal animations */
-  .reveal {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-  .reveal-delay-4 { transition-delay: 0.4s; }
-  .reveal-delay-5 { transition-delay: 0.5s; }
-
-  /* ─── ABOUT ─── */
-  #about { background: #fafafa; }
-  .about-grid {
-    max-width: 1200px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 70px; align-items: center;
-  }
-  .about-images {
-    position: relative;
-  }
-  .about-img-main {
-    width: 100%; border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 30px 70px rgba(0,0,0,0.15);
-    aspect-ratio: 4/5;
-  }
-  .about-img-main img { width:100%; height:100%; object-fit:cover; }
-  .about-img-float {
-    position: absolute;
-    bottom: -28px; right: -28px;
-    width: 180px; height: 180px;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 6px solid white;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.2);
-  }
-  .about-img-float img { width:100%; height:100%; object-fit:cover; }
   .about-text { }
-  .about-text .section-label { color: var(--pink); }
-  .about-text .section-label::before, .about-text .section-label::after { background: var(--pink); }
-  .about-description {
-    color: #555; font-size: 1.05rem; line-height: 1.8; margin-bottom: 40px;
+  .about-stats {
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:2px;margin:36px 0;
   }
-  .stats-row {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 16px; margin-bottom: 36px;
+  .a-stat {
+    padding:24px 20px;background:var(--white);
+    text-align:center;
+    transition:background 0.3s;
   }
-  .stat-card {
-    background: white;
-    border-radius: 20px;
-    padding: 22px 16px;
-    text-align: center;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.07);
-    border: 2px solid transparent;
-    transition: border-color 0.3s, transform 0.3s;
+  .a-stat:hover { background:var(--black); }
+  .a-stat:hover .a-val, .a-stat:hover .a-lbl { color:var(--gold); }
+  .a-val {
+    font-family:'Cormorant Garamond',serif;
+    font-size:2rem;color:var(--black);
+    line-height:1;transition:color 0.3s;
   }
-  .stat-card:hover { border-color: var(--yellow); transform: translateY(-4px); }
-  .stat-card .big {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.9rem;
-    line-height: 1;
-    margin-bottom: 6px;
+  .a-lbl {
+    font-size:0.65rem;font-weight:600;
+    letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--grey-md);margin-top:6px;
+    transition:color 0.3s;
   }
-  .stat-card:nth-child(1) .big { color: var(--pink); }
-  .stat-card:nth-child(2) .big { color: var(--purple); }
-  .stat-card:nth-child(3) .big { color: var(--coral); }
-  .stat-card .lbl { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* ─── PACKAGES ─── */
-  #packages {
-    background: var(--dark);
-    position: relative;
-    overflow: hidden;
+  /* ── PACKAGES ── */
+  #packages { background:var(--black); }
+  .pkg-header { text-align:center;margin-bottom:70px; }
+  .pkg-header .section-tag { justify-content:center;color:var(--gold); }
+  .pkg-header .section-heading { color:var(--white); }
+  .pkg-grid {
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:2px;
   }
-  #packages::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 0% 50%, rgba(123,47,190,0.25) 0%, transparent 60%),
-                radial-gradient(ellipse at 100% 50%, rgba(255,60,172,0.2) 0%, transparent 60%);
-    pointer-events: none;
+  .pkg {
+    padding:50px 36px;
+    background:#111;
+    position:relative;
+    transition:background 0.4s;
   }
-  .packages-header { text-align: center; margin-bottom: 60px; position: relative; z-index: 1; }
-  .packages-header .section-label { color: var(--yellow); justify-content: center; }
-  .packages-header .section-label::before, .packages-header .section-label::after { background: var(--yellow); }
-  .packages-header .section-title { color: white; }
-  .packages-header .section-sub { color: rgba(255,255,255,0.55); margin: 0 auto; }
-  .packages-grid {
-    max-width: 1100px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    position: relative; z-index: 1;
+  .pkg:hover { background:#161616; }
+  .pkg.featured {
+    background:var(--white);
+    padding-top:60px;
   }
-  .pkg-card {
-    border-radius: 28px;
-    padding: 36px 28px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: default;
+  .pkg.featured:hover { background:#f8f7f5; }
+  .pkg-top-bar {
+    position:absolute;top:0;left:0;right:0;
+    height:2px;
+    background:transparent;
   }
-  .pkg-card:hover { transform: translateY(-8px); }
-  .pkg-card.silver {
-    background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.1);
+  .pkg.featured .pkg-top-bar { background:var(--gold); }
+  .pkg-label {
+    position:absolute;top:20px;right:20px;
+    background:var(--gold);
+    color:var(--black);
+    font-size:0.6rem;font-weight:700;
+    letter-spacing:1.5px;text-transform:uppercase;
+    padding:4px 10px;
+    display:none;
   }
-  .pkg-card.gold {
-    background: linear-gradient(145deg, rgba(255,214,0,0.12) 0%, rgba(255,107,107,0.1) 100%);
-    border: 1.5px solid rgba(255,214,0,0.35);
-    box-shadow: 0 20px 60px rgba(255,214,0,0.15);
-  }
-  .pkg-card.premium {
-    background: linear-gradient(145deg, rgba(123,47,190,0.25) 0%, rgba(255,60,172,0.15) 100%);
-    border: 1.5px solid rgba(123,47,190,0.4);
-    box-shadow: 0 20px 60px rgba(123,47,190,0.2);
-  }
-  .pkg-badge {
-    position: absolute; top: 18px; right: 18px;
-    background: var(--yellow);
-    color: var(--dark);
-    font-size: 0.7rem; font-weight: 900;
-    padding: 5px 12px; border-radius: 50px;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    display: none;
-  }
-  .pkg-card.gold .pkg-badge { display: block; }
-  .pkg-icon { font-size: 2.6rem; margin-bottom: 16px; }
+  .pkg.featured .pkg-label { display:block; }
+  .pkg-icon { font-size:1.6rem;margin-bottom:20px; }
   .pkg-name {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.4rem;
-    color: white;
-    margin-bottom: 8px;
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.6rem;font-weight:500;
+    color:var(--white);margin-bottom:6px;
   }
-  .pkg-tagline { font-size: 0.88rem; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+  .pkg.featured .pkg-name { color:var(--black); }
+  .pkg-desc { font-size:0.82rem;color:rgba(255,255,255,0.4);margin-bottom:28px;font-weight:300; }
+  .pkg.featured .pkg-desc { color:var(--grey-md); }
   .pkg-price {
-    display: flex; align-items: baseline; gap: 6px;
-    margin-bottom: 28px;
+    display:flex;align-items:flex-start;gap:4px;
+    margin-bottom:32px;
+    padding-bottom:28px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
   }
-  .pkg-price .amount {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 3rem;
-    line-height: 1;
-    color: white;
+  .pkg.featured .pkg-price { border-bottom-color:rgba(0,0,0,0.08); }
+  .pkg-currency { font-size:1.1rem;color:var(--gold);margin-top:8px;font-weight:500; }
+  .pkg-amount {
+    font-family:'Cormorant Garamond',serif;
+    font-size:3.5rem;font-weight:300;
+    color:var(--white);line-height:1;
   }
-  .pkg-price .currency { font-size: 1.3rem; color: rgba(255,255,255,0.6); font-weight: 700; }
-  .pkg-card.gold .pkg-price .amount { color: var(--yellow); }
-  .pkg-card.premium .pkg-price .amount { color: #c084fc; }
-  .pkg-features { list-style: none; margin-bottom: 32px; }
-  .pkg-features li {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 0.92rem;
-    color: rgba(255,255,255,0.75);
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+  .pkg.featured .pkg-amount { color:var(--black); }
+  .pkg-feats { list-style:none;margin-bottom:36px; }
+  .pkg-feats li {
+    display:flex;align-items:center;gap:12px;
+    font-size:0.85rem;font-weight:300;
+    color:rgba(255,255,255,0.6);
+    padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05);
   }
-  .pkg-features li:last-child { border-bottom: none; }
-  .pkg-features .check { font-size: 1rem; flex-shrink: 0; }
-  .pkg-cta {
-    width: 100%;
-    padding: 14px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    transition: all 0.25s;
-    text-decoration: none;
-    display: block;
-    text-align: center;
+  .pkg.featured .pkg-feats li { color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06); }
+  .pkg-feats li:last-child { border-bottom:none; }
+  .pkg-feats .chk { color:var(--gold);font-size:0.7rem; }
+  .pkg-btn {
+    display:block;width:100%;text-align:center;
+    padding:14px;
+    font-size:0.72rem;font-weight:600;
+    letter-spacing:2px;text-transform:uppercase;
+    text-decoration:none;
+    cursor:pointer;border:none;
+    transition:all 0.3s;
   }
-  .pkg-card.silver .pkg-cta {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border: 1.5px solid rgba(255,255,255,0.2);
+  .pkg .pkg-btn {
+    background:transparent;
+    color:rgba(255,255,255,0.5);
+    border:1px solid rgba(255,255,255,0.12);
   }
-  .pkg-card.silver .pkg-cta:hover { background: rgba(255,255,255,0.2); }
-  .pkg-card.gold .pkg-cta {
-    background: var(--yellow);
-    color: var(--dark);
-    box-shadow: 0 8px 28px rgba(255,214,0,0.4);
+  .pkg .pkg-btn:hover { border-color:var(--gold);color:var(--gold); }
+  .pkg.featured .pkg-btn {
+    background:var(--black);color:var(--white);
   }
-  .pkg-card.gold .pkg-cta:hover { transform: scale(1.03); box-shadow: 0 12px 36px rgba(255,214,0,0.6); }
-  .pkg-card.premium .pkg-cta {
-    background: var(--grad1);
-    color: white;
-    box-shadow: 0 8px 28px rgba(123,47,190,0.4);
-  }
-  .pkg-card.premium .pkg-cta:hover { transform: scale(1.03); }
+  .pkg.featured .pkg-btn:hover { background:var(--gold);color:var(--black); }
 
-  /* ─── GALLERY ─── */
-  #gallery { background: white; }
-  .gallery-header { text-align: center; margin-bottom: 50px; }
-  .gallery-header .section-label { color: var(--purple); justify-content: center; }
-  .gallery-header .section-label::before, .gallery-header .section-label::after { background: var(--purple); }
+  /* ── GALLERY ── */
+  #gallery { background:var(--white); padding-bottom:0; }
+  .gallery-head { max-width:600px;margin-bottom:60px; }
   .gallery-grid {
-    max-width: 1200px; margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 260px;
-    gap: 16px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:340px 340px;
+    gap:3px;
   }
-  .gallery-item {
-    border-radius: 20px;
-    overflow: hidden;
-    position: relative;
-    cursor: pointer;
+  .g-item {
+    overflow:hidden;position:relative;cursor:pointer;
+    background:#111;
   }
-  .gallery-item:nth-child(1) { grid-row: span 2; }
-  .gallery-item:nth-child(4) { grid-row: span 2; }
-  .gallery-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
+  .g-item:first-child { grid-row:span 2; }
+  .g-item img {
+    width:100%;height:100%;object-fit:cover;
+    transition:transform 0.7s ease, filter 0.4s;
+    filter:grayscale(20%);
   }
-  .gallery-item:hover img { transform: scale(1.08); }
-  .gallery-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(15,14,23,0.7) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    display: flex; align-items: flex-end;
-    padding: 20px;
+  .g-item:hover img { transform:scale(1.06);filter:grayscale(0%); }
+  .g-overlay {
+    position:absolute;inset:0;
+    background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%);
+    opacity:0;transition:opacity 0.4s;
+    display:flex;align-items:flex-end;padding:20px;
   }
-  .gallery-item:hover .gallery-overlay { opacity: 1; }
-  .gallery-overlay span {
-    color: white; font-weight: 800; font-size: 1rem;
+  .g-item:hover .g-overlay { opacity:1; }
+  .g-label {
+    font-size:0.72rem;font-weight:600;
+    letter-spacing:2px;text-transform:uppercase;
+    color:var(--white);
   }
-  .gallery-item::after {
-    content: '📸';
-    position: absolute; top: 14px; right: 14px;
-    font-size: 1.3rem;
-    opacity: 0;
-    transition: opacity 0.3s;
-    transform: rotate(-10deg);
+  .g-line {
+    display:block;width:0;height:1px;
+    background:var(--gold);
+    transition:width 0.5s 0.1s ease;
+    margin-bottom:6px;
   }
-  .gallery-item:hover::after { opacity: 1; }
+  .g-item:hover .g-line { width:28px; }
 
-  /* ─── FEATURES ─── */
-  #features { background: linear-gradient(180deg, #fff9f0 0%, #fff0f5 100%); }
-  .features-header { text-align: center; margin-bottom: 60px; }
-  .features-header .section-label { color: var(--coral); justify-content: center; }
-  .features-header .section-label::before, .features-header .section-label::after { background: var(--coral); }
-  .features-grid {
-    max-width: 1100px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+  /* ── FEATURES ── */
+  #features { background:var(--grey); }
+  .feat-head { text-align:center;max-width:560px;margin:0 auto 70px; }
+  .feat-grid {
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:2px;
   }
-  .feature-card {
-    background: white;
-    border-radius: 24px;
-    padding: 32px 28px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
+  .feat-card {
+    background:var(--white);
+    padding:42px 36px;
+    transition:background 0.4s;
+    position:relative;
+    overflow:hidden;
   }
-  .feature-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    border-radius: 24px 24px 0 0;
+  .feat-card::after {
+    content:'';
+    position:absolute;bottom:0;left:0;right:0;height:2px;
+    background:var(--gold);
+    transform:scaleX(0);transform-origin:left;
+    transition:transform 0.4s ease;
   }
-  .feature-card:nth-child(1)::before { background: var(--yellow); }
-  .feature-card:nth-child(2)::before { background: var(--pink); }
-  .feature-card:nth-child(3)::before { background: var(--purple); }
-  .feature-card:nth-child(4)::before { background: var(--cyan); }
-  .feature-card:nth-child(5)::before { background: var(--coral); }
-  .feature-card:nth-child(6)::before { background: var(--green); }
-  .feature-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  .feat-card:hover { background:var(--black); }
+  .feat-card:hover::after { transform:scaleX(1); }
+  .feat-card:hover .feat-icon-wrap { background:var(--gold); }
+  .feat-card:hover .feat-title { color:var(--white); }
+  .feat-card:hover .feat-txt { color:rgba(255,255,255,0.45); }
+  .feat-icon-wrap {
+    width:50px;height:50px;
+    background:var(--grey);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.3rem;
+    margin-bottom:22px;
+    transition:background 0.4s;
   }
-  .feature-card:nth-child(1):hover { border-color: var(--yellow); }
-  .feature-card:nth-child(2):hover { border-color: var(--pink); }
-  .feature-card:nth-child(3):hover { border-color: var(--purple); }
-  .feature-card:nth-child(4):hover { border-color: var(--cyan); }
-  .feature-card:nth-child(5):hover { border-color: var(--coral); }
-  .feature-card:nth-child(6):hover { border-color: var(--green); }
-  .feat-icon { font-size: 2.8rem; margin-bottom: 18px; display: block; }
-  .feat-title { font-family: 'Paytone One', sans-serif; font-size: 1.15rem; margin-bottom: 10px; }
-  .feat-text { font-size: 0.92rem; color: #666; line-height: 1.7; }
+  .feat-title {
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.35rem;font-weight:500;
+    margin-bottom:12px;transition:color 0.4s;
+  }
+  .feat-txt {
+    font-size:0.85rem;line-height:1.8;
+    color:var(--grey-md);font-weight:300;
+    transition:color 0.4s;
+  }
 
-  /* ─── REVIEWS ─── */
-  #reviews { background: var(--dark); position: relative; overflow: hidden; }
-  #reviews::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(255,214,0,0.08) 0%, transparent 60%);
-    pointer-events: none;
+  /* ── REVIEWS ── */
+  #reviews { background:var(--black); }
+  .reviews-head { text-align:center;margin-bottom:70px; }
+  .reviews-head .section-heading { color:var(--white); }
+  .g-badge {
+    display:inline-flex;align-items:center;gap:16px;
+    border:1px solid rgba(196,163,90,0.2);
+    padding:16px 28px;margin-top:24px;
+    background:rgba(196,163,90,0.04);
   }
-  .reviews-header { text-align: center; margin-bottom: 60px; position: relative; z-index: 1; }
-  .reviews-header .section-label { color: var(--yellow); justify-content: center; }
-  .reviews-header .section-label::before, .reviews-header .section-label::after { background: var(--yellow); }
-  .reviews-header .section-title { color: white; }
-  .google-rating-badge {
-    display: inline-flex; align-items: center; gap: 14px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px;
-    padding: 16px 28px;
-    margin-top: 24px;
+  .g-score-big {
+    font-family:'Cormorant Garamond',serif;
+    font-size:2.8rem;color:var(--white);line-height:1;
   }
-  .google-g {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.8rem;
-    background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .g-score { font-family: 'Paytone One', sans-serif; font-size: 2rem; color: white; }
-  .g-stars { color: var(--yellow); font-size: 1.1rem; }
-  .g-count { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .g-divider { width:1px;height:40px;background:rgba(255,255,255,0.1); }
+  .g-detail .stars { color:var(--gold);letter-spacing:2px;font-size:0.9rem; }
+  .g-detail .count { font-size:0.72rem;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-top:4px; }
   .reviews-grid {
-    max-width: 1100px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    position: relative; z-index: 1;
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:2px;
   }
-  .review-card {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
-    padding: 30px;
-    transition: transform 0.3s, border-color 0.3s;
+  .r-card {
+    background:#111;
+    padding:40px 32px;
+    transition:background 0.3s;
+    position:relative;
   }
-  .review-card:hover { transform: translateY(-5px); border-color: rgba(255,214,0,0.3); }
-  .review-stars { color: var(--yellow); font-size: 1.1rem; margin-bottom: 16px; letter-spacing: 2px; }
-  .review-text {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.8);
-    line-height: 1.7;
-    font-style: italic;
-    margin-bottom: 24px;
-    quotes: "\201E" "\201C";
+  .r-card:hover { background:#161616; }
+  .r-card::before {
+    content:'"';
+    font-family:'Cormorant Garamond',serif;
+    font-size:6rem;font-weight:300;
+    color:var(--gold);opacity:0.15;
+    position:absolute;top:16px;left:24px;
+    line-height:1;
   }
-  .review-text::before { content: open-quote; font-size: 1.8rem; color: var(--yellow); line-height: 0; vertical-align: -0.5rem; }
-  .review-author { display: flex; align-items: center; gap: 12px; }
-  .review-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; font-weight: 900;
-    color: white; flex-shrink: 0;
+  .r-stars { color:var(--gold);font-size:0.75rem;letter-spacing:2px;margin-bottom:18px; }
+  .r-text {
+    font-size:0.95rem;line-height:1.8;
+    color:rgba(255,255,255,0.65);
+    font-weight:300;
+    margin-bottom:28px;
+    font-style:italic;
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.05rem;
   }
-  .review-card:nth-child(1) .review-avatar { background: var(--grad1); }
-  .review-card:nth-child(2) .review-avatar { background: var(--grad2); }
-  .review-card:nth-child(3) .review-avatar { background: var(--grad3); color: var(--dark); }
-  .review-name { font-weight: 800; color: white; font-size: 0.95rem; }
-  .review-type { font-size: 0.8rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+  .r-author { display:flex;align-items:center;gap:14px; }
+  .r-avatar {
+    width:40px;height:40px;border-radius:50%;
+    background:var(--grey-dk);
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.9rem;font-weight:600;color:var(--gold);
+    border:1px solid rgba(196,163,90,0.2);
+    flex-shrink:0;
+  }
+  .r-name { font-size:0.85rem;font-weight:600;color:var(--white); }
+  .r-event { font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:2px;letter-spacing:0.5px; }
 
-  /* ─── CTA ─── */
+  /* ── CTA ── */
   #cta {
-    background: linear-gradient(135deg, #FFD600 0%, #FF6B6B 50%, #FF3CAC 100%);
-    text-align: center;
-    position: relative; overflow: hidden;
+    background:var(--white);
+    text-align:center;
+    border-top:1px solid rgba(0,0,0,0.06);
+    padding:130px 6%;
+    position:relative;overflow:hidden;
   }
   #cta::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    pointer-events: none;
+    content:'';position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:600px;height:600px;
+    background:radial-gradient(circle,rgba(196,163,90,0.06) 0%,transparent 70%);
+    pointer-events:none;
   }
-  .cta-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
-  .cta-emoji { font-size: 3.5rem; margin-bottom: 20px; display: block; animation: cta-bounce 2s ease-in-out infinite; }
-  @keyframes cta-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .cta-wrap { position:relative;z-index:1;max-width:640px;margin:0 auto; }
+  .cta-cam { font-size:2.2rem;margin-bottom:24px;display:block; }
   .cta-title {
-    font-family: 'Paytone One', sans-serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    color: white;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.2);
-    margin-bottom: 16px;
-    line-height: 1.2;
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2.2rem,4vw,3.8rem);
+    font-weight:300;line-height:1.1;
+    margin-bottom:18px;
   }
-  .cta-sub { font-size: 1.1rem; color: rgba(255,255,255,0.85); margin-bottom: 40px; line-height: 1.6; }
-  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-  .btn-cta-dark {
-    background: var(--dark);
-    color: white;
-    padding: 16px 34px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 1rem;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: none; cursor: pointer;
+  .cta-title em { font-style:italic;color:var(--gold); }
+  .cta-sub {
+    font-size:0.95rem;color:var(--grey-md);
+    line-height:1.8;font-weight:300;margin-bottom:44px;
   }
-  .btn-cta-dark:hover { transform: scale(1.04); box-shadow: 0 14px 40px rgba(0,0,0,0.4); }
-  .btn-cta-white {
-    background: white;
-    color: var(--dark);
-    padding: 16px 34px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 1rem;
-    text-decoration: none;
-    display: inline-flex; align-items: center; gap: 8px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    transition: transform 0.2s;
-    border: none; cursor: pointer;
+  .cta-btns { display:flex;gap:14px;justify-content:center;flex-wrap:wrap; }
+  .btn-filled {
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--black);color:var(--white);
+    padding:15px 34px;
+    font-size:0.75rem;font-weight:600;
+    letter-spacing:2px;text-transform:uppercase;
+    text-decoration:none;border:none;cursor:pointer;
+    transition:background 0.3s,transform 0.3s;
   }
-  .btn-cta-white:hover { transform: scale(1.04); }
+  .btn-filled:hover { background:var(--gold);color:var(--black);transform:translateY(-2px); }
+  .btn-outline {
+    display:inline-flex;align-items:center;gap:10px;
+    background:transparent;color:var(--black);
+    padding:15px 34px;
+    font-size:0.75rem;font-weight:600;
+    letter-spacing:2px;text-transform:uppercase;
+    text-decoration:none;
+    border:1px solid rgba(0,0,0,0.2);
+    transition:border-color 0.3s,color 0.3s;
+    cursor:pointer;
+  }
+  .btn-outline:hover { border-color:var(--gold);color:var(--gold); }
 
-  /* ─── CONTACT ─── */
-  #contact { background: #fafafa; }
-  .contact-grid {
-    max-width: 1100px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1.2fr;
-    gap: 60px; align-items: start;
+  /* ── CONTACT ── */
+  #contact { background:var(--grey); }
+  .contact-wrap {
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1.3fr;
+    gap:70px;align-items:start;
   }
-  .contact-info .section-label { color: var(--purple); }
-  .contact-info .section-label::before, .contact-info .section-label::after { background: var(--purple); }
-  .contact-cards { display: flex; flex-direction: column; gap: 16px; margin-top: 36px; }
-  .contact-card {
-    display: flex; align-items: center; gap: 18px;
-    background: white;
-    border-radius: 18px;
-    padding: 20px 24px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    transition: transform 0.2s;
-    text-decoration: none;
-    color: inherit;
+  .contact-info .section-tag { }
+  .contact-list { margin-top:36px;display:flex;flex-direction:column;gap:2px; }
+  .c-row {
+    display:flex;align-items:center;gap:20px;
+    background:var(--white);
+    padding:20px 24px;
+    text-decoration:none;color:inherit;
+    transition:background 0.3s;
   }
-  .contact-card:hover { transform: translateX(6px); }
-  .contact-icon {
-    width: 50px; height: 50px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-    flex-shrink: 0;
+  .c-row:hover { background:var(--black); }
+  .c-row:hover .c-icon { color:var(--gold); }
+  .c-row:hover .c-title,.c-row:hover .c-val { color:var(--white); }
+  .c-icon {
+    font-size:1.1rem;width:36px;text-align:center;
+    color:var(--gold);flex-shrink:0;
+    transition:color 0.3s;
   }
-  .contact-card:nth-child(1) .contact-icon { background: linear-gradient(135deg, #25D366, #128C7E); }
-  .contact-card:nth-child(2) .contact-icon { background: linear-gradient(135deg, #FF3CAC, #FF6B6B); }
-  .contact-card:nth-child(3) .contact-icon { background: linear-gradient(135deg, #4285F4, #34A853); }
-  .contact-card:nth-child(4) .contact-icon { background: linear-gradient(135deg, #FF6B6B, #FFD600); }
-  .contact-card:nth-child(5) .contact-icon { background: linear-gradient(135deg, #7B2FBE, #FF3CAC); }
-  .contact-card-text .title { font-weight: 800; font-size: 0.95rem; margin-bottom: 3px; }
-  .contact-card-text .val { font-size: 0.88rem; color: #777; }
-  .contact-form-wrapper {
-    background: white;
-    border-radius: 28px;
-    padding: 44px 40px;
-    box-shadow: 0 16px 60px rgba(0,0,0,0.08);
+  .c-title {
+    font-size:0.72rem;font-weight:600;
+    letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--grey-md);margin-bottom:3px;
+    transition:color 0.3s;
   }
-  .contact-form-wrapper h3 {
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.5rem;
-    margin-bottom: 8px;
+  .c-val {
+    font-size:0.9rem;font-weight:500;
+    color:var(--black);
+    transition:color 0.3s;
   }
-  .contact-form-wrapper p { color: #888; font-size: 0.9rem; margin-bottom: 28px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .form-group { margin-bottom: 14px; }
-  .form-group label { display: block; font-weight: 700; font-size: 0.85rem; color: #444; margin-bottom: 6px; }
-  .form-group input, .form-group textarea, .form-group select {
-    width: 100%;
-    padding: 14px 18px;
-    border: 2px solid #eee;
-    border-radius: 14px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    color: var(--dark);
-    background: #fafafa;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    outline: none;
+  .contact-form-box {
+    background:var(--white);
+    padding:50px 44px;
   }
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-    border-color: var(--pink);
-    box-shadow: 0 0 0 4px rgba(255,60,172,0.1);
-    background: white;
+  .contact-form-box h3 {
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.8rem;font-weight:400;margin-bottom:6px;
   }
-  .form-group textarea { resize: vertical; min-height: 110px; }
-  .btn-form-submit {
-    width: 100%;
-    background: var(--grad1);
-    color: white;
-    padding: 16px;
-    border-radius: 50px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 1rem;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 8px 28px rgba(123,47,190,0.35);
-    transition: transform 0.2s, box-shadow 0.2s;
-    margin-top: 8px;
+  .contact-form-box p { font-size:0.85rem;color:var(--grey-md);margin-bottom:30px;font-weight:300; }
+  .f-row { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px; }
+  .f-group { margin-bottom:14px; }
+  .f-group label {
+    display:block;
+    font-size:0.68rem;font-weight:600;
+    letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--grey-md);margin-bottom:8px;
   }
-  .btn-form-submit:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(123,47,190,0.5); }
+  .f-group input,.f-group textarea,.f-group select {
+    width:100%;
+    padding:14px 16px;
+    border:1px solid rgba(0,0,0,0.1);
+    background:var(--grey);
+    font-family:'Inter',sans-serif;
+    font-size:0.9rem;
+    color:var(--black);
+    outline:none;
+    border-radius:0;
+    transition:border-color 0.3s,background 0.3s;
+    -webkit-appearance:none;
+  }
+  .f-group input:focus,.f-group textarea:focus,.f-group select:focus {
+    border-color:var(--gold);
+    background:var(--white);
+  }
+  .f-group textarea { resize:vertical;min-height:110px; }
+  .btn-form {
+    width:100%;padding:15px;
+    background:var(--black);color:var(--white);
+    border:none;cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-size:0.75rem;font-weight:600;
+    letter-spacing:2.5px;text-transform:uppercase;
+    transition:background 0.3s;
+    margin-top:6px;
+  }
+  .btn-form:hover { background:var(--gold);color:var(--black); }
+  #form-ok {
+    display:none;text-align:center;
+    padding:40px 20px;
+    border:1px solid rgba(196,163,90,0.3);
+    background:rgba(196,163,90,0.04);
+    margin-top:20px;
+  }
+  #form-ok .ok-icon { font-size:2rem;margin-bottom:12px; }
+  #form-ok h4 {
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.5rem;margin-bottom:8px;
+  }
+  #form-ok p { font-size:0.85rem;color:var(--grey-md); }
 
-  /* ─── FOOTER ─── */
+  /* ── FOOTER ── */
   footer {
-    background: var(--dark);
-    padding: 60px 5% 30px;
-    color: rgba(255,255,255,0.55);
+    background:var(--black);
+    padding:70px 6% 30px;
   }
-  .footer-top {
-    display: grid; grid-template-columns: 2fr 1fr 1fr;
-    gap: 50px;
-    margin-bottom: 50px;
+  .footer-grid {
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:2fr 1fr 1fr;
+    gap:60px;padding-bottom:50px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+    margin-bottom:30px;
   }
-  .footer-brand .nav-logo { margin-bottom: 16px; display: inline-flex; }
-  .footer-brand p { font-size: 0.9rem; line-height: 1.7; max-width: 280px; }
-  .footer-socials { display: flex; gap: 12px; margin-top: 20px; }
-  .social-btn {
-    width: 42px; height: 42px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem;
-    text-decoration: none;
-    transition: transform 0.2s;
+  .f-brand .nav-logo { display:inline-flex;margin-bottom:18px; }
+  .f-brand p {
+    font-size:0.85rem;line-height:1.8;
+    color:rgba(255,255,255,0.4);font-weight:300;
+    max-width:260px;
   }
-  .social-btn:hover { transform: scale(1.12); }
-  .social-btn.ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-  .social-btn.wa { background: #25D366; }
-  .social-btn.gm { background: #4285F4; }
-  .footer-col h4 { color: white; font-weight: 800; margin-bottom: 18px; font-size: 0.95rem; }
-  .footer-col ul { list-style: none; }
-  .footer-col ul li { margin-bottom: 10px; }
-  .footer-col ul li a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
-  .footer-col ul li a:hover { color: var(--yellow); }
+  .f-socials { display:flex;gap:10px;margin-top:24px; }
+  .f-social {
+    width:38px;height:38px;
+    border:1px solid rgba(255,255,255,0.1);
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.9rem;color:rgba(255,255,255,0.5);
+    text-decoration:none;
+    transition:border-color 0.3s,color 0.3s;
+  }
+  .f-social:hover { border-color:var(--gold);color:var(--gold); }
+  .f-col h5 {
+    font-size:0.68rem;font-weight:600;
+    letter-spacing:2px;text-transform:uppercase;
+    color:rgba(255,255,255,0.5);
+    margin-bottom:20px;
+  }
+  .f-col ul { list-style:none; }
+  .f-col ul li { margin-bottom:12px; }
+  .f-col ul li a {
+    font-size:0.85rem;color:rgba(255,255,255,0.35);
+    text-decoration:none;font-weight:300;
+    transition:color 0.3s;
+  }
+  .f-col ul li a:hover { color:var(--gold); }
   .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding-top: 24px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px;
+    max-width:1200px;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:12px;
   }
-  .footer-bottom span { font-size: 0.85rem; }
-  .footer-bottom a { color: rgba(255,255,255,0.4); text-decoration: none; }
-  .footer-bottom a:hover { color: var(--yellow); }
-  .footer-heart { color: var(--pink); }
+  .footer-bottom span { font-size:0.78rem;color:rgba(255,255,255,0.25); }
+  .footer-bottom a { color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.3s; }
+  .footer-bottom a:hover { color:var(--gold); }
 
-  /* ─── MOBILE ─── */
-  @media (max-width: 900px) {
-    .hero-content { grid-template-columns: 1fr; text-align: center; gap: 50px; }
-    .hero-buttons { justify-content: center; }
-    .hero-stats { justify-content: center; }
-    .hero-visual { order: -1; }
-    .fotobox-wrapper { width: 240px; }
-    .fotobox-device { width: 220px; }
-    .photo-strip { right: -60px; width: 58px; }
-    .about-grid { grid-template-columns: 1fr; gap: 50px; }
-    .about-img-float { right: 10px; bottom: -20px; width: 140px; height: 140px; }
-    .packages-grid { grid-template-columns: 1fr; max-width: 400px; }
-    .gallery-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 200px; }
-    .gallery-item:nth-child(1), .gallery-item:nth-child(4) { grid-row: span 1; }
-    .features-grid { grid-template-columns: 1fr 1fr; }
-    .reviews-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
-    .contact-grid { grid-template-columns: 1fr; }
-    .footer-top { grid-template-columns: 1fr; gap: 30px; }
-    .nav-links { display: none; }
-    .hamburger { display: flex; }
-    .form-row { grid-template-columns: 1fr; }
+  /* ── RESPONSIVE ── */
+  @media(max-width:960px){
+    .hero-content { grid-template-columns:1fr;gap:60px;text-align:center; }
+    .hero-sub { margin:0 auto 44px; }
+    .hero-actions { justify-content:center; }
+    .hero-numbers { justify-content:center; }
+    .hero-device-wrap { order:-1; }
+    .photo-strip { right:-54px;width:50px; }
+    .about-wrap { grid-template-columns:1fr;gap:60px; }
+    .about-badge { right:10px;bottom:-20px;width:110px;height:110px; }
+    .pkg-grid { grid-template-columns:1fr;max-width:420px;margin:0 auto; }
+    .gallery-grid { grid-template-rows:280px 280px; }
+    .feat-grid { grid-template-columns:1fr 1fr; }
+    .reviews-grid { grid-template-columns:1fr;max-width:500px;margin:0 auto; }
+    .contact-wrap { grid-template-columns:1fr; }
+    .footer-grid { grid-template-columns:1fr;gap:36px; }
+    .nav-links { display:none; }
+    .hamburger { display:flex; }
   }
-  @media (max-width: 600px) {
-    section { padding: 70px 5%; }
-    .gallery-grid { grid-template-columns: 1fr; grid-auto-rows: 220px; }
-    .features-grid { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .stat-card { padding: 16px 10px; }
-    .stat-card .big { font-size: 1.5rem; }
-    .contact-form-wrapper { padding: 28px 22px; }
-  }
-
-  /* Mobile nav menu */
-  .mobile-menu {
-    position: fixed; inset: 0; z-index: 999;
-    background: rgba(15,14,23,0.97);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 32px;
-    transform: translateX(100%);
-    transition: transform 0.35s ease;
-  }
-  .mobile-menu.open { transform: translateX(0); }
-  .mobile-menu a {
-    color: white;
-    text-decoration: none;
-    font-family: 'Paytone One', sans-serif;
-    font-size: 1.6rem;
-    transition: color 0.2s;
-  }
-  .mobile-menu a:hover { color: var(--yellow); }
-  .mobile-close {
-    position: absolute; top: 24px; right: 28px;
-    font-size: 2rem; color: white; cursor: pointer; background: none; border: none;
-  }
-
-  /* Scroll progress */
-  .progress-bar {
-    position: fixed; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--grad1);
-    transform-origin: left;
-    transform: scaleX(0);
-    z-index: 10000;
-    transition: transform 0.1s;
+  @media(max-width:600px){
+    section { padding:80px 5%; }
+    .gallery-grid { grid-template-columns:1fr;grid-template-rows:auto; }
+    .g-item:first-child { grid-row:span 1; }
+    .g-item { height:280px; }
+    .feat-grid { grid-template-columns:1fr; }
+    .about-stats { grid-template-columns:repeat(3,1fr); }
+    .f-row { grid-template-columns:1fr; }
+    .contact-form-box { padding:30px 24px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Flash overlay for photo effect -->
-<div id="flash-overlay"></div>
-<!-- Scroll progress -->
-<div class="progress-bar" id="progressBar"></div>
+<div id="progress"></div>
+<div id="flash"></div>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
 
-<!-- Mobile menu -->
-<div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">✕</button>
-  <a href="#about" onclick="closeMobileMenu()">Über uns</a>
-  <a href="#packages" onclick="closeMobileMenu()">Pakete</a>
-  <a href="#gallery" onclick="closeMobileMenu()">Galerie</a>
-  <a href="#features" onclick="closeMobileMenu()">Leistungen</a>
-  <a href="#reviews" onclick="closeMobileMenu()">Bewertungen</a>
-  <a href="#contact" onclick="closeMobileMenu()">Kontakt</a>
-  <a href="https://wa.me/4917686660050" target="_blank" class="btn-nav" style="padding:14px 28px;border-radius:50px;background:var(--yellow);color:var(--dark);font-family:'Nunito',sans-serif;">📸 Jetzt buchen</a>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mob">
+  <button class="mobile-close" onclick="closeMob()">✕</button>
+  <a href="#about"    onclick="closeMob()">Über uns</a>
+  <a href="#packages" onclick="closeMob()">Pakete</a>
+  <a href="#gallery"  onclick="closeMob()">Galerie</a>
+  <a href="#features" onclick="closeMob()">Leistungen</a>
+  <a href="#reviews"  onclick="closeMob()">Bewertungen</a>
+  <a href="#contact"  onclick="closeMob()">Kontakt</a>
 </div>
 
 <!-- NAV -->
-<nav id="navbar">
+<nav id="nav">
   <a href="#" class="nav-logo">
     <img src="https://yaselfotobox.de/wp-content/uploads/2025/10/WhatsApp-Image-2025-11-27-at-01.00.09-150x150.jpeg" alt="Yaself Logo">
-    <span>Yaself<em>Fotobox</em></span>
+    <span>Yaself Fotobox</span>
   </a>
   <div class="nav-links">
     <a href="#about">Über uns</a>
@@ -1039,155 +985,143 @@
     <a href="#gallery">Galerie</a>
     <a href="#features">Leistungen</a>
     <a href="#reviews">Bewertungen</a>
-    <a href="#contact">Kontakt</a>
-    <a href="https://wa.me/4917686660050" target="_blank" class="btn-nav">📸 Jetzt buchen</a>
+    <a href="https://wa.me/4917686660050" target="_blank" class="nav-btn">Anfragen</a>
   </div>
-  <div class="hamburger" id="hamburger" onclick="openMobileMenu()">
+  <div class="hamburger" id="ham" onclick="openMob()">
     <span></span><span></span><span></span>
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- ── HERO ── -->
 <section id="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-particles" id="particles"></div>
-
+  <div class="hero-lines">
+    <div class="hero-line" style="left:15%;width:1px;top:0;bottom:0;"></div>
+    <div class="hero-line" style="left:35%;width:1px;top:0;bottom:0;opacity:0.5;animation-delay:3s"></div>
+    <div class="hero-line" style="left:65%;width:1px;top:0;bottom:0;opacity:0.3;animation-delay:6s"></div>
+    <div class="hero-line" style="left:85%;width:1px;top:0;bottom:0;opacity:0.5;animation-delay:9s"></div>
+  </div>
+  <div class="hero-grain"></div>
   <div class="hero-content">
     <div class="hero-text">
-      <div class="hero-badge">
-        <div class="dot"></div>
-        <span>Verfügbar in NRW</span>
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-line"></div>
+        <span>Premium Fotobox · NRW</span>
       </div>
       <h1 class="hero-title">
-        Die <span class="highlight">Fotobox,</span><br>
-        über die alle reden 🎉
+        Die Fotobox,<br>
+        über die alle<br>
+        <em>reden.</em>
       </h1>
       <p class="hero-sub">
-        Premium-Fotobox mieten für Hochzeiten, Geburtstage &amp; Events. Canon DSLR · Sofortdruck · Online-Galerie. Lieferung bis 150 km – inkl. Auf- und Abbau.
+        Canon DSLR · Sofortdruck · Online-Galerie.<br>
+        Für Hochzeiten, Geburtstage &amp; Events in ganz Nordrhein-Westfalen.
       </p>
-      <div class="hero-buttons">
-        <a href="https://wa.me/4917686660050" target="_blank" class="btn-primary">
-          📱 WhatsApp anfragen
-        </a>
-        <a href="#packages" class="btn-secondary">
-          🎁 Pakete ansehen
-        </a>
+      <div class="hero-actions">
+        <a href="https://wa.me/4917686660050?text=Hallo!%20Ich%20möchte%20eine%20Fotobox%20anfragen." target="_blank" class="btn-dark">WhatsApp anfragen</a>
+        <a href="#packages" class="btn-outline-white">Pakete ansehen</a>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="num" data-target="1000">0</div>
-          <div class="lbl">Events</div>
+      <div class="hero-numbers">
+        <div class="hero-num">
+          <div class="val" data-target="1000">0<em>+</em></div>
+          <div class="key">Events</div>
         </div>
-        <div class="stat-divider"></div>
-        <div class="hero-stat">
-          <div class="num" data-target="650">0</div>
-          <div class="lbl">Tsd. Fotos</div>
+        <div class="hero-num">
+          <div class="val" data-target="650">0<em>K+</em></div>
+          <div class="key">Fotos gedruckt</div>
         </div>
-        <div class="stat-divider"></div>
-        <div class="hero-stat">
-          <div class="num" data-target="150">0</div>
-          <div class="lbl">km Lieferung</div>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="hero-stat">
-          <div class="num">5★</div>
-          <div class="lbl">Bewertungen</div>
+        <div class="hero-num">
+          <div class="val">5.0<em>★</em></div>
+          <div class="key">Bewertung</div>
         </div>
       </div>
     </div>
 
-    <!-- Animated Fotobox Device -->
-    <div class="hero-visual">
-      <div class="fotobox-wrapper">
-        <div class="fotobox-glow"></div>
-        <div class="fotobox-device">
-          <div class="fotobox-screen" id="fotoboxScreen">
-            <img id="screenImg"
-              src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg"
-              alt="Fotobox Event">
-            <div class="fotobox-flash" id="fotoboxFlash"></div>
+    <!-- Device -->
+    <div class="hero-device-wrap">
+      <div style="position:relative;">
+        <div class="device-glow"></div>
+        <div class="device" id="device">
+          <div class="device-screen">
+            <img id="scrImg" src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Event">
+            <div class="device-flash" id="devFlash"></div>
           </div>
-          <div class="fotobox-controls">
-            <div class="fotobox-led"></div>
-            <button class="shutter-btn" id="shutterBtn" onclick="triggerShot()" title="Foto machen!"></button>
-            <div class="fotobox-led" style="background:var(--pink);box-shadow:0 0 10px var(--pink);animation-delay:0.7s"></div>
+          <div class="device-footer">
+            <div class="device-led"></div>
+            <button class="shutter" id="shutterBtn" onclick="shoot()" title="Foto aufnehmen"></button>
+            <div class="device-led2"></div>
           </div>
         </div>
-        <!-- Photo strip -->
-        <div class="photo-strip" id="photoStrip">
-          <div class="strip-photo"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Party"></div>
-          <div class="strip-photo"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt="Geburtstag"></div>
-          <div class="strip-photo"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Hochzeit"></div>
-          <div class="strip-label">YASELF ★</div>
+        <div class="photo-strip">
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt=""></div>
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt=""></div>
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt=""></div>
+          <div class="strip-name">Yaself</div>
         </div>
-        <!-- Floating emojis -->
-        <div class="floating-emoji" style="top:-20px;left:-10px;animation-delay:0s">✨</div>
-        <div class="floating-emoji" style="top:30px;right:-20px;animation-delay:1s">🎊</div>
-        <div class="floating-emoji" style="bottom:80px;left:-25px;animation-delay:2s">📷</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- MARQUEE -->
-<div class="marquee-section">
-  <div class="marquee-track" id="marqueeTrack">
-    <div class="marquee-item"><span class="marquee-dot">📸</span> Hochzeiten</div>
-    <div class="marquee-item"><span class="marquee-dot">🎂</span> Geburtstage</div>
-    <div class="marquee-item"><span class="marquee-dot">🎉</span> Firmenfeiern</div>
-    <div class="marquee-item"><span class="marquee-dot">💍</span> Verlobungen</div>
-    <div class="marquee-item"><span class="marquee-dot">🕺</span> Partys</div>
-    <div class="marquee-item"><span class="marquee-dot">👶</span> Babyshower</div>
-    <div class="marquee-item"><span class="marquee-dot">🎓</span> Abschlüsse</div>
-    <div class="marquee-item"><span class="marquee-dot">🖨️</span> Sofortdruck</div>
-    <div class="marquee-item"><span class="marquee-dot">📸</span> Hochzeiten</div>
-    <div class="marquee-item"><span class="marquee-dot">🎂</span> Geburtstage</div>
-    <div class="marquee-item"><span class="marquee-dot">🎉</span> Firmenfeiern</div>
-    <div class="marquee-item"><span class="marquee-dot">💍</span> Verlobungen</div>
-    <div class="marquee-item"><span class="marquee-dot">🕺</span> Partys</div>
-    <div class="marquee-item"><span class="marquee-dot">👶</span> Babyshower</div>
-    <div class="marquee-item"><span class="marquee-dot">🎓</span> Abschlüsse</div>
-    <div class="marquee-item"><span class="marquee-dot">🖨️</span> Sofortdruck</div>
+<div class="marquee">
+  <div class="marquee-inner">
+    <div class="m-item">Hochzeiten <span class="m-sep">◆</span></div>
+    <div class="m-item">Geburtstage <span class="m-sep">◆</span></div>
+    <div class="m-item">Firmenfeiern <span class="m-sep">◆</span></div>
+    <div class="m-item">Verlobungen <span class="m-sep">◆</span></div>
+    <div class="m-item">Partys <span class="m-sep">◆</span></div>
+    <div class="m-item">Babyshower <span class="m-sep">◆</span></div>
+    <div class="m-item">Abschlüsse <span class="m-sep">◆</span></div>
+    <div class="m-item">Sofortdruck <span class="m-sep">◆</span></div>
+    <div class="m-item">Hochzeiten <span class="m-sep">◆</span></div>
+    <div class="m-item">Geburtstage <span class="m-sep">◆</span></div>
+    <div class="m-item">Firmenfeiern <span class="m-sep">◆</span></div>
+    <div class="m-item">Verlobungen <span class="m-sep">◆</span></div>
+    <div class="m-item">Partys <span class="m-sep">◆</span></div>
+    <div class="m-item">Babyshower <span class="m-sep">◆</span></div>
+    <div class="m-item">Abschlüsse <span class="m-sep">◆</span></div>
+    <div class="m-item">Sofortdruck <span class="m-sep">◆</span></div>
   </div>
 </div>
 
 <!-- ABOUT -->
 <section id="about">
-  <div class="about-grid">
-    <div class="about-images reveal">
-      <div class="about-img-main">
+  <div class="about-wrap">
+    <div class="about-img-col r">
+      <div class="about-main">
         <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt="Yaself Fotobox Gerät">
       </div>
-      <div class="about-img-float">
-        <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Party Gäste">
+      <div class="about-badge">
+        <div class="b-num">5★</div>
+        <div class="b-txt">Top<br>Bewertung</div>
       </div>
     </div>
     <div class="about-text">
-      <div class="section-label reveal">
-        <span>Über uns</span>
-      </div>
-      <h2 class="section-title reveal reveal-delay-1">
-        Dein Moment.<br>Unser <span style="background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Fokus.</span>
-      </h2>
-      <p class="about-description reveal reveal-delay-2">
-        Yaself Fotobox steht für unvergessliche Erinnerungen bei jedem Event in Nordrhein-Westfalen. Mit Canon DSLR-Technologie, professionellem Studiolicht und 8-Sekunden-Thermodruck liefern wir Premium-Qualität – für Hochzeiten, Geburtstage, Firmenfeiern und mehr.
+      <div class="section-tag r">Über uns</div>
+      <h2 class="section-heading r d1">Dein Moment.<br>Unser Handwerk.</h2>
+      <div class="gold-line r d2"></div>
+      <p class="section-body r d2">
+        Yaself Fotobox steht für unvergessliche Erinnerungen. Mit professioneller Canon DSLR-Technologie, Studiolicht und 8-Sekunden-Thermodruck bieten wir Premium-Qualität bei jedem Event in Nordrhein-Westfalen – von der Hochzeit bis zur Firmenfeier.
       </p>
-      <div class="stats-row reveal reveal-delay-3">
-        <div class="stat-card">
-          <div class="big">1.000+</div>
-          <div class="lbl">Events</div>
+      <p class="section-body r d3" style="margin-top:14px;">
+        Persönlich. Präzise. Unvergesslich.
+      </p>
+      <div class="about-stats r d4">
+        <div class="a-stat">
+          <div class="a-val" data-target="1000">0+</div>
+          <div class="a-lbl">Events</div>
         </div>
-        <div class="stat-card">
-          <div class="big">650K+</div>
-          <div class="lbl">Fotos</div>
+        <div class="a-stat">
+          <div class="a-val" data-target="650">0K+</div>
+          <div class="a-lbl">Fotos</div>
         </div>
-        <div class="stat-card">
-          <div class="big">5★</div>
-          <div class="lbl">Rating</div>
+        <div class="a-stat">
+          <div class="a-val">150km</div>
+          <div class="a-lbl">Lieferung</div>
         </div>
       </div>
-      <div class="reveal reveal-delay-4">
-        <a href="#packages" class="btn-primary" style="display:inline-flex;">🎯 Paket wählen</a>
+      <div class="r d5">
+        <a href="#packages" class="btn-filled">Pakete entdecken</a>
       </div>
     </div>
   </div>
@@ -1195,192 +1129,199 @@
 
 <!-- PACKAGES -->
 <section id="packages">
-  <div class="packages-header reveal">
-    <div class="section-label" style="justify-content:center;">Preise &amp; Pakete</div>
-    <h2 class="section-title">Für jeden Event das <span style="color:var(--yellow)">perfekte</span> Paket</h2>
-    <p class="section-sub">Alle Pakete inkl. Lieferung, Aufbau &amp; Abbau. Individuelle Layouts inklusive.</p>
+  <div class="pkg-header r">
+    <div class="section-tag" style="justify-content:center;">Preise &amp; Pakete</div>
+    <h2 class="section-heading" style="color:var(--white);">Für jeden Event<br>das richtige Paket.</h2>
   </div>
-  <div class="packages-grid">
-    <div class="pkg-card silver reveal reveal-delay-1">
-      <div class="pkg-icon">🥈</div>
+  <div class="pkg-grid">
+    <div class="pkg r d1">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-icon">◇</div>
       <div class="pkg-name">Silber Basic</div>
-      <div class="pkg-tagline">Perfekt für kleinere Events</div>
+      <div class="pkg-desc">Ideal für kleinere Events</div>
       <div class="pkg-price">
-        <span class="currency">€</span>
-        <span class="amount">239</span>
+        <span class="pkg-currency">€</span>
+        <span class="pkg-amount">239</span>
       </div>
-      <ul class="pkg-features">
-        <li><span class="check">⏱️</span> 3 Stunden Laufzeit</li>
-        <li><span class="check">📍</span> Lieferung bis 20 km</li>
-        <li><span class="check">🖼️</span> 200 Fotos inkl.</li>
-        <li><span class="check">📱</span> Online-Galerie</li>
-        <li><span class="check">🎨</span> Individuelles Layout</li>
-        <li><span class="check">🔧</span> Auf- &amp; Abbau inklusive</li>
+      <ul class="pkg-feats">
+        <li><span class="chk">◆</span> 3 Stunden Laufzeit</li>
+        <li><span class="chk">◆</span> Lieferung bis 20 km</li>
+        <li><span class="chk">◆</span> 200 Fotos inklusive</li>
+        <li><span class="chk">◆</span> Online-Galerie</li>
+        <li><span class="chk">◆</span> Individuelles Layout</li>
+        <li><span class="chk">◆</span> Auf- &amp; Abbau inklusive</li>
       </ul>
-      <a href="https://wa.me/4917686660050?text=Ich%20interessiere%20mich%20für%20das%20Silber%20Basic%20Paket" target="_blank" class="pkg-cta">Jetzt anfragen</a>
+      <a href="https://wa.me/4917686660050?text=Silber%20Basic%20Paket%20anfragen" target="_blank" class="pkg-btn">Anfragen</a>
     </div>
 
-    <div class="pkg-card gold reveal reveal-delay-2">
-      <div class="pkg-badge">Beliebt</div>
-      <div class="pkg-icon">🥇</div>
-      <div class="pkg-name">Gold Plus</div>
-      <div class="pkg-tagline">Unser Bestseller</div>
+    <div class="pkg featured r d2">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-label">Beliebt</div>
+      <div class="pkg-icon" style="color:var(--gold);">◈</div>
+      <div class="pkg-name" style="color:var(--black);">Gold Plus</div>
+      <div class="pkg-desc" style="color:var(--grey-md);">Unser Bestseller</div>
       <div class="pkg-price">
-        <span class="currency">€</span>
-        <span class="amount">299</span>
+        <span class="pkg-currency">€</span>
+        <span class="pkg-amount" style="color:var(--black);">299</span>
       </div>
-      <ul class="pkg-features">
-        <li><span class="check">⏱️</span> 5 Stunden Laufzeit</li>
-        <li><span class="check">📍</span> Lieferung bis 30 km</li>
-        <li><span class="check">🖼️</span> 400 Fotos inkl.</li>
-        <li><span class="check">📱</span> Online-Galerie</li>
-        <li><span class="check">🎨</span> Individuelles Layout</li>
-        <li><span class="check">💡</span> Studio-Beleuchtung</li>
+      <ul class="pkg-feats">
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> 5 Stunden Laufzeit</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Lieferung bis 30 km</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> 400 Fotos inklusive</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Online-Galerie</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Individuelles Layout</li>
+        <li style="color:var(--grey-dk);"><span class="chk">◆</span> Studio-Beleuchtung</li>
       </ul>
-      <a href="https://wa.me/4917686660050?text=Ich%20interessiere%20mich%20für%20das%20Gold%20Plus%20Paket" target="_blank" class="pkg-cta">Jetzt buchen ✨</a>
+      <a href="https://wa.me/4917686660050?text=Gold%20Plus%20Paket%20anfragen" target="_blank" class="pkg-btn" style="background:var(--black);color:var(--white);">Jetzt buchen</a>
     </div>
 
-    <div class="pkg-card premium reveal reveal-delay-3">
-      <div class="pkg-icon">💎</div>
+    <div class="pkg r d3">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-icon">◉</div>
       <div class="pkg-name">Premium All-In</div>
-      <div class="pkg-tagline">Das volle Erlebnis</div>
+      <div class="pkg-desc">Das volle Erlebnis</div>
       <div class="pkg-price">
-        <span class="currency">€</span>
-        <span class="amount">369</span>
+        <span class="pkg-currency">€</span>
+        <span class="pkg-amount">369</span>
       </div>
-      <ul class="pkg-features">
-        <li><span class="check">⏱️</span> 7 Stunden Laufzeit</li>
-        <li><span class="check">📍</span> Lieferung bis 40 km</li>
-        <li><span class="check">🖼️</span> Unbegrenzte Fotos</li>
-        <li><span class="check">📱</span> Online-Galerie</li>
-        <li><span class="check">🎨</span> Premium-Layout</li>
-        <li><span class="check">🌟</span> Alles inklusive</li>
+      <ul class="pkg-feats">
+        <li><span class="chk">◆</span> 7 Stunden Laufzeit</li>
+        <li><span class="chk">◆</span> Lieferung bis 40 km</li>
+        <li><span class="chk">◆</span> Unbegrenzte Fotos</li>
+        <li><span class="chk">◆</span> Online-Galerie</li>
+        <li><span class="chk">◆</span> Premium-Layout</li>
+        <li><span class="chk">◆</span> Alles inklusive</li>
       </ul>
-      <a href="https://wa.me/4917686660050?text=Ich%20interessiere%20mich%20für%20das%20Premium%20All-In%20Paket" target="_blank" class="pkg-cta">Premium wählen 💎</a>
+      <a href="https://wa.me/4917686660050?text=Premium%20All-In%20Paket%20anfragen" target="_blank" class="pkg-btn">Anfragen</a>
     </div>
   </div>
 </section>
 
 <!-- GALLERY -->
 <section id="gallery">
-  <div class="gallery-header">
-    <div class="section-label reveal">Unsere Galerie</div>
-    <h2 class="section-title reveal reveal-delay-1">Echte Momente,<br><span style="background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">echte Freude</span></h2>
+  <div class="gallery-head">
+    <div class="section-tag r">Galerie</div>
+    <h2 class="section-heading r d1">Echte Momente,<br>echte Erinnerungen.</h2>
   </div>
   <div class="gallery-grid">
-    <div class="gallery-item reveal">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Hochzeit Dinslaken">
-      <div class="gallery-overlay"><span>💍 Hochzeit Dinslaken</span></div>
+    <div class="g-item r">
+      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Hochzeit">
+      <div class="g-overlay">
+        <div><span class="g-line"></span><span class="g-label">Hochzeit · Dinslaken</span></div>
+      </div>
     </div>
-    <div class="gallery-item reveal reveal-delay-1">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Party Oberhausen">
-      <div class="gallery-overlay"><span>🎉 Party Oberhausen</span></div>
+    <div class="g-item r d1">
+      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Party">
+      <div class="g-overlay">
+        <div><span class="g-line"></span><span class="g-label">Party · Oberhausen</span></div>
+      </div>
     </div>
-    <div class="gallery-item reveal reveal-delay-2">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt="Geburtstag Moers">
-      <div class="gallery-overlay"><span>🎂 Geburtstag Moers</span></div>
+    <div class="g-item r d2">
+      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt="Geburtstag">
+      <div class="g-overlay">
+        <div><span class="g-line"></span><span class="g-label">Geburtstag · Moers</span></div>
+      </div>
     </div>
-    <div class="gallery-item reveal reveal-delay-3">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt="Fotobox Setup">
-      <div class="gallery-overlay"><span>📸 Premium Setup</span></div>
+    <div class="g-item r d3">
+      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt="Setup">
+      <div class="g-overlay">
+        <div><span class="g-line"></span><span class="g-label">Premium Setup</span></div>
+      </div>
     </div>
-    <div class="gallery-item reveal reveal-delay-4">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Gruppenfoto">
-      <div class="gallery-overlay"><span>👥 Gruppenfotos</span></div>
-    </div>
-    <div class="gallery-item reveal reveal-delay-5">
-      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt="Lachende Gäste">
-      <div class="gallery-overlay"><span>😄 Lachende Gäste</span></div>
+    <div class="g-item r d4">
+      <img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Gruppe">
+      <div class="g-overlay">
+        <div><span class="g-line"></span><span class="g-label">Gruppenfotos</span></div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
 <section id="features">
-  <div class="features-header">
-    <div class="section-label reveal">Was wir bieten</div>
-    <h2 class="section-title reveal reveal-delay-1">Alles drin. Nichts vergessen.</h2>
-    <p class="section-sub reveal reveal-delay-2" style="margin:0 auto;">Von der Buchung bis zum letzten Foto – wir kümmern uns um alles.</p>
+  <div class="feat-head">
+    <div class="section-tag r">Leistungen</div>
+    <h2 class="section-heading r d1">Alles inklusive.<br>Nichts dem Zufall überlassen.</h2>
   </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <span class="feat-icon">📷</span>
-      <div class="feat-title">Canon DSLR Kamera</div>
-      <p class="feat-text">Professionelle Canon DSLR mit Studiolicht für brillante Bildqualität bei jedem Event.</p>
+  <div class="feat-grid">
+    <div class="feat-card r">
+      <div class="feat-icon-wrap">📷</div>
+      <h3 class="feat-title">Canon DSLR</h3>
+      <p class="feat-txt">Professionelle Kamera mit Studiolicht für brillante Bildqualität – bei jedem Licht, bei jedem Event.</p>
     </div>
-    <div class="feature-card reveal reveal-delay-1">
-      <span class="feat-icon">🖨️</span>
-      <div class="feat-title">8-Sek. Sofortdruck</div>
-      <p class="feat-text">10×15 cm Thermodruck in nur 8 Sekunden – deine Gäste nehmen echte Fotos mit nach Hause.</p>
+    <div class="feat-card r d1">
+      <div class="feat-icon-wrap">🖨️</div>
+      <h3 class="feat-title">8-Sek. Sofortdruck</h3>
+      <p class="feat-txt">10 × 15 cm Thermopapier-Druck in nur 8 Sekunden. Deine Gäste nehmen echte Fotos mit nach Hause.</p>
     </div>
-    <div class="feature-card reveal reveal-delay-2">
-      <span class="feat-icon">🖥️</span>
-      <div class="feat-title">15" Touchscreen</div>
-      <p class="feat-text">Live-Vorschau auf dem 15-Zoll-Touchscreen. Intuitiv bedienbar für jedes Alter.</p>
+    <div class="feat-card r d2">
+      <div class="feat-icon-wrap">🖥️</div>
+      <h3 class="feat-title">15" Touchscreen</h3>
+      <p class="feat-txt">Live-Vorschau auf dem großen Touchscreen – intuitiv und kinderleicht bedienbar für jeden.</p>
     </div>
-    <div class="feature-card reveal reveal-delay-3">
-      <span class="feat-icon">🎨</span>
-      <div class="feat-title">Individuelles Layout</div>
-      <p class="feat-text">Jedes Layout wird auf dein Event abgestimmt – mit deinem Namen, Datum und Design.</p>
+    <div class="feat-card r d3">
+      <div class="feat-icon-wrap">🎨</div>
+      <h3 class="feat-title">Individuelles Layout</h3>
+      <p class="feat-txt">Jedes Layout wird auf dein Event abgestimmt – mit deinem Namen, Datum und eigenem Design.</p>
     </div>
-    <div class="feature-card reveal reveal-delay-4">
-      <span class="feat-icon">🔒</span>
-      <div class="feat-title">Online-Galerie</div>
-      <p class="feat-text">Passwortgeschützte Galerie – alle Fotos digital für dich und deine Gäste zugänglich.</p>
+    <div class="feat-card r d4">
+      <div class="feat-icon-wrap">🔒</div>
+      <h3 class="feat-title">Online-Galerie</h3>
+      <p class="feat-txt">Passwortgeschützte digitale Galerie – alle Fotos sicher zugänglich für dich und deine Gäste.</p>
     </div>
-    <div class="feature-card reveal reveal-delay-5">
-      <span class="feat-icon">🚚</span>
-      <div class="feat-title">Lieferung &amp; Service</div>
-      <p class="feat-text">Lieferung, Aufbau und Abbau inklusive. Bis zu 150 km Umkreis in NRW möglich.</p>
+    <div class="feat-card r d5">
+      <div class="feat-icon-wrap">🚚</div>
+      <h3 class="feat-title">Lieferung &amp; Service</h3>
+      <p class="feat-txt">Lieferung, Aufbau und Abbau komplett inklusive. Wir kommen bis zu 150 km in ganz NRW.</p>
     </div>
   </div>
 </section>
 
 <!-- REVIEWS -->
 <section id="reviews">
-  <div class="reviews-header">
-    <div class="section-label">Kundenstimmen</div>
-    <h2 class="section-title">Was unsere Kunden <span style="color:var(--yellow)">sagen</span></h2>
-    <div class="google-rating-badge reveal">
-      <span class="google-g">G</span>
-      <div>
-        <div class="g-score">5.0</div>
-        <div class="g-stars">★★★★★</div>
-        <div class="g-count">Verifizierte Google-Bewertungen</div>
+  <div class="reviews-head r">
+    <div class="section-tag" style="justify-content:center;">Kundenstimmen</div>
+    <h2 class="section-heading">Was unsere Kunden sagen.</h2>
+    <div class="g-badge">
+      <div class="g-score-big">5.0</div>
+      <div class="g-divider"></div>
+      <div class="g-detail">
+        <div class="stars">★★★★★</div>
+        <div class="count">Verifizierte Bewertungen</div>
       </div>
     </div>
   </div>
   <div class="reviews-grid">
-    <div class="review-card reveal">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">Absolut begeistert! Die Fotobox war der Hit auf unserer Hochzeit. Alle Gäste haben sich davor angestellt und die Fotos waren in wenigen Sekunden fertig gedruckt!</div>
-      <div class="review-author">
-        <div class="review-avatar">S</div>
+    <div class="r-card r d1">
+      <div class="r-stars">★★★★★</div>
+      <p class="r-text">Absolut begeistert! Die Fotobox war der Hit auf unserer Hochzeit. Alle Gäste haben sich davor angestellt und die Fotos waren in Sekunden fertig.</p>
+      <div class="r-author">
+        <div class="r-avatar">S</div>
         <div>
-          <div class="review-name">Sarah M.</div>
-          <div class="review-type">💍 Hochzeit in Dinslaken</div>
+          <div class="r-name">Sarah M.</div>
+          <div class="r-event">Hochzeit · Dinslaken</div>
         </div>
       </div>
     </div>
-    <div class="review-card reveal reveal-delay-2">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">Toller Service, superschnelle Antwort und die Fotobox selbst ist einfach der Hammer. Alle Gäste haben davon geschwärmt. Klare Empfehlung für jeden Event!</div>
-      <div class="review-author">
-        <div class="review-avatar">K</div>
+    <div class="r-card r d2">
+      <div class="r-stars">★★★★★</div>
+      <p class="r-text">Toller Service, superschnelle Antwort und die Fotobox selbst ist einfach der Hammer. Alle Gäste haben geschwärmt. Klare Empfehlung!</p>
+      <div class="r-author">
+        <div class="r-avatar">K</div>
         <div>
-          <div class="review-name">Kevin T.</div>
-          <div class="review-type">🎂 Geburtstag in Oberhausen</div>
+          <div class="r-name">Kevin T.</div>
+          <div class="r-event">Geburtstag · Oberhausen</div>
         </div>
       </div>
     </div>
-    <div class="review-card reveal reveal-delay-4">
-      <div class="review-stars">★★★★★</div>
-      <div class="review-text">Wir kamen extra aus Köln und es hat sich mehr als gelohnt! Professionelles Equipment, freundlicher Service. Die Online-Galerie war ein tolles Extra für alle Gäste.</div>
-      <div class="review-author">
-        <div class="review-avatar">L</div>
+    <div class="r-card r d3">
+      <div class="r-stars">★★★★★</div>
+      <p class="r-text">Wir kamen extra aus Köln – es hat sich mehr als gelohnt. Professionelles Equipment, freundlicher Service. Die Online-Galerie war ein tolles Extra.</p>
+      <div class="r-author">
+        <div class="r-avatar">L</div>
         <div>
-          <div class="review-name">Lena R.</div>
-          <div class="review-type">🎉 Firmenfeier in Moers</div>
+          <div class="r-name">Lena R.</div>
+          <div class="r-event">Firmenfeier · Moers</div>
         </div>
       </div>
     </div>
@@ -1389,110 +1330,92 @@
 
 <!-- CTA -->
 <section id="cta">
-  <div class="cta-content">
-    <span class="cta-emoji">📸</span>
-    <h2 class="cta-title reveal">Bereit für unvergessliche Momente?</h2>
-    <p class="cta-sub reveal reveal-delay-1">Schreib uns jetzt auf WhatsApp oder ruf an – wir antworten am selben Tag und machen dein Event unvergesslich!</p>
-    <div class="cta-buttons reveal reveal-delay-2">
-      <a href="https://wa.me/4917686660050?text=Hallo!%20Ich%20möchte%20eine%20Fotobox%20buchen." target="_blank" class="btn-cta-dark">
-        💬 WhatsApp schreiben
-      </a>
-      <a href="tel:+491784561907" class="btn-cta-white">
-        📞 +49 178 456 1907
-      </a>
+  <div class="cta-wrap">
+    <span class="cta-cam r">◎</span>
+    <h2 class="cta-title r d1">Bereit für<br><em>unvergessliche</em><br>Momente?</h2>
+    <p class="cta-sub r d2">Schreib uns auf WhatsApp oder ruf an – wir antworten noch am selben Tag und machen dein Event unvergesslich.</p>
+    <div class="cta-btns r d3">
+      <a href="https://wa.me/4917686660050?text=Hallo!%20Ich%20möchte%20eine%20Fotobox%20buchen." target="_blank" class="btn-filled">WhatsApp schreiben</a>
+      <a href="tel:+491784561907" class="btn-outline">+49 178 456 1907</a>
     </div>
   </div>
 </section>
 
 <!-- CONTACT -->
 <section id="contact">
-  <div class="contact-grid">
+  <div class="contact-wrap">
     <div class="contact-info">
-      <div class="section-label reveal">Kontakt</div>
-      <h2 class="section-title reveal reveal-delay-1">Schreib uns <span style="background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">einfach an</span></h2>
-      <p class="section-sub reveal reveal-delay-2">Wir freuen uns auf deine Anfrage und melden uns noch am selben Tag.</p>
-      <div class="contact-cards">
-        <a href="https://wa.me/4917686660050" target="_blank" class="contact-card reveal reveal-delay-1">
-          <div class="contact-icon">💬</div>
-          <div class="contact-card-text">
-            <div class="title">WhatsApp</div>
-            <div class="val">+49 176 8666 0050</div>
-          </div>
+      <div class="section-tag r">Kontakt</div>
+      <h2 class="section-heading r d1">Schreib uns<br>einfach an.</h2>
+      <div class="gold-line r d2"></div>
+      <p class="section-body r d2">Wir freuen uns auf deine Anfrage und melden uns noch am selben Tag.</p>
+      <div class="contact-list">
+        <a href="https://wa.me/4917686660050" target="_blank" class="c-row r d1">
+          <span class="c-icon">💬</span>
+          <div><div class="c-title">WhatsApp</div><div class="c-val">+49 176 8666 0050</div></div>
         </a>
-        <a href="tel:+491784561907" class="contact-card reveal reveal-delay-2">
-          <div class="contact-icon">📞</div>
-          <div class="contact-card-text">
-            <div class="title">Telefon</div>
-            <div class="val">+49 178 456 1907</div>
-          </div>
+        <a href="tel:+491784561907" class="c-row r d2">
+          <span class="c-icon">📞</span>
+          <div><div class="c-title">Telefon</div><div class="c-val">+49 178 456 1907</div></div>
         </a>
-        <a href="mailto:yaselfotobox@web.de" class="contact-card reveal reveal-delay-3">
-          <div class="contact-icon">✉️</div>
-          <div class="contact-card-text">
-            <div class="title">E-Mail</div>
-            <div class="val">yaselfotobox@web.de</div>
-          </div>
+        <a href="mailto:yaselfotobox@web.de" class="c-row r d3">
+          <span class="c-icon">✉</span>
+          <div><div class="c-title">E-Mail</div><div class="c-val">yaselfotobox@web.de</div></div>
         </a>
-        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="contact-card reveal reveal-delay-4">
-          <div class="contact-icon">📷</div>
-          <div class="contact-card-text">
-            <div class="title">Instagram</div>
-            <div class="val">@yaselfotobox</div>
-          </div>
+        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="c-row r d4">
+          <span class="c-icon">◎</span>
+          <div><div class="c-title">Instagram</div><div class="c-val">@yaselfotobox</div></div>
         </a>
-        <div class="contact-card reveal reveal-delay-5" style="cursor:default;">
-          <div class="contact-icon">📍</div>
-          <div class="contact-card-text">
-            <div class="title">Servicegebiet</div>
-            <div class="val">Duisburg &amp; ganz NRW (bis 150 km)</div>
-          </div>
+        <div class="c-row r d5" style="cursor:default;">
+          <span class="c-icon">⬡</span>
+          <div><div class="c-title">Servicegebiet</div><div class="c-val">Duisburg &amp; ganz NRW · bis 150 km</div></div>
         </div>
       </div>
     </div>
 
-    <div class="contact-form-wrapper reveal">
-      <h3>📅 Anfrage senden</h3>
-      <p>Füll das Formular aus – wir melden uns innerhalb von wenigen Stunden!</p>
-      <form id="contactForm" onsubmit="submitForm(event)">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="name">Dein Name *</label>
-            <input type="text" id="name" placeholder="Max Mustermann" required>
+    <div class="contact-form-box r d1">
+      <h3>Anfrage senden</h3>
+      <p>Wir antworten innerhalb weniger Stunden.</p>
+      <form id="cForm" onsubmit="sendForm(event)">
+        <div class="f-row">
+          <div class="f-group">
+            <label for="nm">Name *</label>
+            <input type="text" id="nm" placeholder="Max Mustermann" required>
           </div>
-          <div class="form-group">
-            <label for="phone">Telefon / WhatsApp *</label>
-            <input type="tel" id="phone" placeholder="+49 ...">
+          <div class="f-group">
+            <label for="ph">Telefon / WhatsApp</label>
+            <input type="tel" id="ph" placeholder="+49 ...">
           </div>
         </div>
-        <div class="form-group">
-          <label for="email">E-Mail Adresse *</label>
-          <input type="email" id="email" placeholder="deine@email.de" required>
+        <div class="f-group">
+          <label for="em">E-Mail *</label>
+          <input type="email" id="em" placeholder="deine@email.de" required>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="eventdate">Event-Datum *</label>
-            <input type="date" id="eventdate" required>
+        <div class="f-row">
+          <div class="f-group">
+            <label for="dt">Event-Datum *</label>
+            <input type="date" id="dt" required>
           </div>
-          <div class="form-group">
-            <label for="package">Gewünschtes Paket</label>
-            <select id="package">
-              <option value="">Paket wählen...</option>
-              <option>🥈 Silber Basic – 239€</option>
-              <option>🥇 Gold Plus – 299€</option>
-              <option>💎 Premium All-In – 369€</option>
+          <div class="f-group">
+            <label for="pk">Paket</label>
+            <select id="pk">
+              <option value="">Bitte wählen …</option>
+              <option>Silber Basic – 239 €</option>
+              <option>Gold Plus – 299 €</option>
+              <option>Premium All-In – 369 €</option>
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label for="message">Deine Nachricht</label>
-          <textarea id="message" placeholder="Erzähl uns von deinem Event – Anlass, Ort, Gästeanzahl..."></textarea>
+        <div class="f-group">
+          <label for="msg">Nachricht</label>
+          <textarea id="msg" placeholder="Anlass, Ort, Gästeanzahl …"></textarea>
         </div>
-        <button type="submit" class="btn-form-submit">✉️ Anfrage absenden</button>
+        <button type="submit" class="btn-form">Anfrage absenden</button>
       </form>
-      <div id="formSuccess" style="display:none;text-align:center;padding:30px;background:linear-gradient(135deg,rgba(6,255,165,0.1),rgba(0,212,255,0.1));border-radius:20px;margin-top:20px;border:2px solid rgba(6,255,165,0.3);">
-        <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
-        <div style="font-family:'Paytone One',sans-serif;font-size:1.3rem;color:var(--dark);margin-bottom:8px;">Anfrage gesendet!</div>
-        <p style="color:#666;font-size:0.9rem;">Wir melden uns so schnell wie möglich bei dir.</p>
+      <div id="form-ok">
+        <div class="ok-icon">◎</div>
+        <h4>Anfrage erhalten!</h4>
+        <p>Wir melden uns so schnell wie möglich bei dir.</p>
       </div>
     </div>
   </div>
@@ -1500,29 +1423,29 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-top">
-    <div class="footer-brand">
+  <div class="footer-grid">
+    <div class="f-brand">
       <a href="#" class="nav-logo">
         <img src="https://yaselfotobox.de/wp-content/uploads/2025/10/WhatsApp-Image-2025-11-27-at-01.00.09-150x150.jpeg" alt="Logo">
-        <span>Yaself<em>Fotobox</em></span>
+        <span>Yaself Fotobox</span>
       </a>
-      <p>Die Fotobox, über die alle reden. Premium-Fotobox-Verleih in ganz Nordrhein-Westfalen – für jeden Anlass.</p>
-      <div class="footer-socials">
-        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="social-btn ig">📷</a>
-        <a href="https://wa.me/4917686660050" target="_blank" class="social-btn wa">💬</a>
-        <a href="tel:+491784561907" class="social-btn gm">📞</a>
+      <p>Die Fotobox, über die alle reden. Premium-Fotobox-Verleih in ganz Nordrhein-Westfalen.</p>
+      <div class="f-socials">
+        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="f-social">◎</a>
+        <a href="https://wa.me/4917686660050" target="_blank" class="f-social">◈</a>
+        <a href="tel:+491784561907" class="f-social">◉</a>
       </div>
     </div>
-    <div class="footer-col">
-      <h4>Pakete</h4>
+    <div class="f-col">
+      <h5>Pakete</h5>
       <ul>
-        <li><a href="#packages">🥈 Silber Basic – 239€</a></li>
-        <li><a href="#packages">🥇 Gold Plus – 299€</a></li>
-        <li><a href="#packages">💎 Premium All-In – 369€</a></li>
+        <li><a href="#packages">Silber Basic – 239 €</a></li>
+        <li><a href="#packages">Gold Plus – 299 €</a></li>
+        <li><a href="#packages">Premium All-In – 369 €</a></li>
       </ul>
     </div>
-    <div class="footer-col">
-      <h4>Rechtliches</h4>
+    <div class="f-col">
+      <h5>Rechtliches</h5>
       <ul>
         <li><a href="https://yaselfotobox.de/impressum/" target="_blank">Impressum</a></li>
         <li><a href="https://yaselfotobox.de/datenschutz/" target="_blank">Datenschutz</a></li>
@@ -1532,154 +1455,121 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Yaself Fotobox · Gemacht mit <span class="footer-heart">♥</span> in Duisburg</span>
-    <span>
-      <a href="https://yaselfotobox.de/impressum/" target="_blank">Impressum</a> ·
-      <a href="https://yaselfotobox.de/datenschutz/" target="_blank">Datenschutz</a>
-    </span>
+    <span>© 2026 Yaself Fotobox — Handgemacht in Duisburg</span>
+    <span><a href="https://yaselfotobox.de/impressum/" target="_blank">Impressum</a> · <a href="https://yaselfotobox.de/datenschutz/" target="_blank">Datenschutz</a></span>
   </div>
 </footer>
 
 <script>
-// ── NAV SCROLL ──
-const navbar = document.getElementById('navbar');
-const progressBar = document.getElementById('progressBar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 60);
-  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-  progressBar.style.transform = `scaleX(${pct})`;
+// ── CUSTOM CURSOR ──
+const cur = document.getElementById('cur');
+const ring = document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function animCursor(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
+})();
+document.querySelectorAll('a,button,.pkg,.feat-card,.g-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cur.style.width='14px';cur.style.height='14px';ring.style.width='50px';ring.style.height='50px'; });
+  el.addEventListener('mouseleave',()=>{ cur.style.width='8px';cur.style.height='8px';ring.style.width='34px';ring.style.height='34px'; });
+});
+
+// ── SCROLL ──
+const nav=document.getElementById('nav');
+const prog=document.getElementById('progress');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',scrollY>60);
+  const p=scrollY/(document.body.scrollHeight-innerHeight);
+  prog.style.transform=`scaleX(${p})`;
 });
 
 // ── MOBILE MENU ──
-function openMobileMenu() { document.getElementById('mobileMenu').classList.add('open'); }
-function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
-document.getElementById('mobileClose').onclick = closeMobileMenu;
+function openMob(){document.getElementById('mob').classList.add('open');}
+function closeMob(){document.getElementById('mob').classList.remove('open');}
 
-// ── PARTICLES ──
-const particleContainer = document.getElementById('particles');
-const colors = ['#FFD600','#FF3CAC','#7B2FBE','#FF6B6B','#00D4FF','#06FFA5'];
-for (let i = 0; i < 18; i++) {
-  const p = document.createElement('div');
-  p.className = 'particle';
-  const size = Math.random() * 14 + 5;
-  p.style.cssText = `
-    width:${size}px;height:${size}px;
-    left:${Math.random()*100}%;
-    background:${colors[Math.floor(Math.random()*colors.length)]};
-    animation-duration:${Math.random()*12+8}s;
-    animation-delay:${Math.random()*8}s;
-    opacity:0.6;
-  `;
-  particleContainer.appendChild(p);
-}
-for (let i = 0; i < 22; i++) {
-  const c = document.createElement('div');
-  c.className = 'confetti-piece';
-  const shapes = ['◆','★','●','▲','❤'];
-  c.innerHTML = shapes[Math.floor(Math.random()*shapes.length)];
-  c.style.cssText = `
-    left:${Math.random()*100}%;
-    color:${colors[Math.floor(Math.random()*colors.length)]};
-    font-size:${Math.random()*14+8}px;
-    animation-duration:${Math.random()*10+7}s;
-    animation-delay:${Math.random()*10}s;
-    background:none;width:auto;height:auto;
-  `;
-  particleContainer.appendChild(c);
-}
-
-// ── FOTOBOX ANIMATION ──
-const screenImages = [
+// ── FOTOBOX SHOOT ──
+const imgs=[
   'https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg',
   'https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg',
   'https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg',
   'https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg',
 ];
-let imgIdx = 0;
-const screenImg = document.getElementById('screenImg');
-const fotoboxFlash = document.getElementById('fotoboxFlash');
-const flashOverlay = document.getElementById('flash-overlay');
-const shutterBtn = document.getElementById('shutterBtn');
+let idx=0;
+const scrImg=document.getElementById('scrImg');
+const devFlash=document.getElementById('devFlash');
+const flashEl=document.getElementById('flash');
+const shutterBtn=document.getElementById('shutterBtn');
 
-function triggerShot() {
-  shutterBtn.classList.add('clicking');
-  fotoboxFlash.classList.add('flashing');
-  flashOverlay.classList.add('flash');
-  setTimeout(() => {
-    imgIdx = (imgIdx + 1) % screenImages.length;
-    screenImg.src = screenImages[imgIdx];
-    fotoboxFlash.classList.remove('flashing');
-    flashOverlay.classList.remove('flash');
-    shutterBtn.classList.remove('clicking');
-  }, 200);
+function shoot(){
+  shutterBtn.classList.add('click');
+  devFlash.classList.add('on');
+  flashEl.classList.add('on');
+  setTimeout(()=>{
+    idx=(idx+1)%imgs.length;
+    scrImg.src=imgs[idx];
+    devFlash.classList.remove('on');
+    flashEl.classList.remove('on');
+    shutterBtn.classList.remove('click');
+  },180);
+}
+setInterval(shoot,3500);
+
+// ── COUNTER ──
+function countUp(el,target,suffix=''){
+  const dur=1600;const step=target/(dur/16);
+  let cur=0;
+  const t=setInterval(()=>{
+    cur=Math.min(cur+step,target);
+    el.textContent=Math.floor(cur).toLocaleString('de')+suffix;
+    if(cur>=target)clearInterval(t);
+  },16);
 }
 
-// Auto-shoot every 3s
-setInterval(triggerShot, 3200);
-
-// ── COUNTER ANIMATION ──
-function animateCounter(el, target, suffix='') {
-  let current = 0;
-  const duration = 1800;
-  const step = target / (duration / 16);
-  const timer = setInterval(() => {
-    current = Math.min(current + step, target);
-    el.textContent = Math.floor(current).toLocaleString('de-DE') + (current >= target ? suffix : '');
-    if (current >= target) clearInterval(timer);
-  }, 16);
-}
-
-// ── SCROLL REVEAL + COUNTER TRIGGER ──
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      if (e.target.dataset.target) {
-        const val = parseInt(e.target.dataset.target);
-        animateCounter(e.target, val, '+');
-        observer.unobserve(e.target);
+// ── INTERSECTION OBSERVER ──
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('in');
+      if(e.target.dataset.target){
+        countUp(e.target,+e.target.dataset.target,'+');
+        obs.unobserve(e.target);
       }
     }
   });
-}, { threshold: 0.12 });
+},{threshold:0.12});
 
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-document.querySelectorAll('[data-target]').forEach(el => observer.observe(el));
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
+document.querySelectorAll('[data-target]').forEach(el=>obs.observe(el));
 
-// ── FORM SUBMIT ──
-function submitForm(e) {
-  e.preventDefault();
-  const form = document.getElementById('contactForm');
-  const success = document.getElementById('formSuccess');
-  form.style.display = 'none';
-  success.style.display = 'block';
-  // Build WhatsApp message from form
-  const name = document.getElementById('name').value;
-  const phone = document.getElementById('phone').value;
-  const email = document.getElementById('email').value;
-  const date = document.getElementById('eventdate').value;
-  const pkg = document.getElementById('package').value;
-  const msg = document.getElementById('message').value;
-  const waText = encodeURIComponent(
-    `Neue Anfrage von der Website!\n\nName: ${name}\nTelefon: ${phone}\nEmail: ${email}\nDatum: ${date}\nPaket: ${pkg}\nNachricht: ${msg}`
-  );
-  setTimeout(() => {
-    window.open(`https://wa.me/4917686660050?text=${waText}`, '_blank');
-  }, 800);
-}
-
-// ── SMOOTH ANCHOR SCROLL ──
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const id = a.getAttribute('href');
-    if (id === '#') return;
-    const target = document.querySelector(id);
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
+// ── SMOOTH SCROLL ──
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const id=a.getAttribute('href');
+    if(id==='#')return;
+    const t=document.querySelector(id);
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
   });
 });
+
+// ── FORM ──
+function sendForm(e){
+  e.preventDefault();
+  const n=document.getElementById('nm').value;
+  const p=document.getElementById('ph').value;
+  const em=document.getElementById('em').value;
+  const d=document.getElementById('dt').value;
+  const pk=document.getElementById('pk').value;
+  const m=document.getElementById('msg').value;
+  const txt=encodeURIComponent(`Anfrage von der Website\n\nName: ${n}\nTel: ${p}\nEmail: ${em}\nDatum: ${d}\nPaket: ${pk}\nNachricht: ${m}`);
+  document.getElementById('cForm').style.display='none';
+  document.getElementById('form-ok').style.display='block';
+  setTimeout(()=>window.open(`https://wa.me/4917686660050?text=${txt}`,'_blank'),600);
+}
 </script>
 </body>
 </html>
