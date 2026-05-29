@@ -1,1 +1,557 @@
-see-local
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yaself Fotobox – Die Fotobox, über die alle reden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:   #0A0A0A;
+    --white:   #FFFFFF;
+    --gold:    #C4A35A;
+    --grey:    #F5F4F2;
+    --grey-md: #888888;
+    --grey-dk: #333333;
+    --border:  rgba(196,163,90,0.25);
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--black); overflow-x: hidden; }
+  #progress { position:fixed;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;z-index:10000;transition:transform 0.1s linear; }
+  #flash { position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:9999;transition:opacity 0.06s; }
+  #flash.on { opacity:1; }
+  .cursor { width:8px;height:8px;background:var(--gold);border-radius:50%;position:fixed;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width 0.2s,height 0.2s; }
+  .cursor-ring { width:34px;height:34px;border:1.5px solid rgba(196,163,90,0.5);border-radius:50%;position:fixed;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width 0.25s,height 0.25s; }
+  nav { position:fixed;top:0;left:0;right:0;z-index:1000;padding:28px 6%;display:flex;align-items:center;justify-content:space-between;transition:padding 0.4s,background 0.4s; }
+  nav.scrolled { background:rgba(10,10,10,0.96);backdrop-filter:blur(16px);padding:16px 6%;border-bottom:1px solid rgba(196,163,90,0.12); }
+  .nav-logo { display:flex;align-items:center;gap:14px;text-decoration:none; }
+  .nav-logo img { width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border); }
+  .nav-logo span { font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500;color:var(--white);letter-spacing:2px;text-transform:uppercase; }
+  .nav-links { display:flex;align-items:center;gap:36px; }
+  .nav-links a { font-size:0.78rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.65);text-decoration:none;transition:color 0.3s; }
+  .nav-links a:hover { color:var(--gold); }
+  .nav-btn { padding:11px 26px;border:1px solid var(--gold);color:var(--gold)!important;font-size:0.75rem!important;letter-spacing:2px!important;transition:background 0.3s,color 0.3s!important; }
+  .nav-btn:hover { background:var(--gold)!important;color:var(--black)!important; }
+  .hamburger { display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001; }
+  .hamburger span { display:block;width:24px;height:1.5px;background:white;transition:all 0.3s; }
+  .mobile-menu { position:fixed;inset:0;z-index:999;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;transform:translateX(100%);transition:transform 0.4s; }
+  .mobile-menu.open { transform:translateX(0); }
+  .mobile-menu a { font-family:'Cormorant Garamond',serif;font-size:2rem;color:rgba(255,255,255,0.75);text-decoration:none;letter-spacing:3px;text-transform:uppercase;transition:color 0.3s; }
+  .mobile-menu a:hover { color:var(--gold); }
+  .mobile-close { position:absolute;top:28px;right:28px;font-size:1.5rem;color:white;cursor:pointer;background:none;border:none; }
+  #hero { min-height:100vh;background:var(--black);display:flex;align-items:center;position:relative;overflow:hidden; }
+  .hero-lines { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+  .hero-line { position:absolute;background:rgba(196,163,90,0.06);animation:line-drift 20s ease-in-out infinite; }
+  @keyframes line-drift { 0%,100%{transform:translateX(0)} 50%{transform:translateX(30px)} }
+  .hero-content { position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:130px 6% 90px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center; }
+  .hero-eyebrow { display:flex;align-items:center;gap:14px;margin-bottom:28px;opacity:0;animation:fade-up 0.9s 0.2s ease both; }
+  .hero-eyebrow-line { width:40px;height:1px;background:var(--gold); }
+  .hero-eyebrow span { font-size:0.72rem;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--gold); }
+  .hero-title { font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,5.5vw,5rem);font-weight:300;line-height:1.08;color:var(--white);margin-bottom:24px;opacity:0;animation:fade-up 0.9s 0.35s ease both; }
+  .hero-title em { font-style:italic;color:var(--gold); }
+  .hero-sub { font-size:1rem;line-height:1.8;color:rgba(255,255,255,0.5);max-width:440px;margin-bottom:44px;font-weight:300;opacity:0;animation:fade-up 0.9s 0.5s ease both; }
+  .hero-actions { display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fade-up 0.9s 0.65s ease both; }
+  @keyframes fade-up { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  .btn-dark { display:inline-flex;align-items:center;gap:10px;background:var(--white);color:var(--black);padding:14px 32px;font-size:0.78rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;transition:background 0.3s,color 0.3s,transform 0.3s; }
+  .btn-dark:hover { background:var(--gold);color:var(--black);transform:translateY(-2px); }
+  .btn-outline-white { display:inline-flex;align-items:center;gap:10px;background:transparent;color:rgba(255,255,255,0.7);padding:14px 32px;font-size:0.78rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border:1px solid rgba(255,255,255,0.2);transition:border-color 0.3s,color 0.3s;cursor:pointer; }
+  .btn-outline-white:hover { border-color:var(--gold);color:var(--gold); }
+  .hero-numbers { display:flex;gap:40px;margin-top:56px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.08);opacity:0;animation:fade-up 0.9s 0.8s ease both;flex-wrap:wrap; }
+  .hero-num .val { font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:400;color:var(--white);line-height:1; }
+  .hero-num .val em { color:var(--gold);font-style:normal; }
+  .hero-num .key { font-size:0.72rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:6px; }
+  .hero-device-wrap { display:flex;justify-content:center;align-items:center;opacity:0;animation:fade-up 1s 0.55s ease both;position:relative; }
+  .device { width:260px;background:#111;border-radius:20px;padding:18px;border:1px solid rgba(196,163,90,0.15);box-shadow:0 40px 80px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.04),inset 0 1px 0 rgba(255,255,255,0.06);position:relative;z-index:2; }
+  .device-screen { background:#000;border-radius:12px;overflow:hidden;aspect-ratio:3/4;position:relative; }
+  .device-screen img { width:100%;height:100%;object-fit:cover;transition:opacity 0.1s; }
+  .device-flash { position:absolute;inset:0;background:white;opacity:0;pointer-events:none;border-radius:12px;transition:opacity 0.06s; }
+  .device-flash.on { opacity:1; }
+  .device-footer { display:flex;align-items:center;justify-content:space-between;padding:14px 4px 4px; }
+  .device-led { width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:led 2s infinite; }
+  @keyframes led { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .shutter { width:46px;height:46px;border-radius:50%;background:#222;border:2px solid #333;box-shadow:inset 0 2px 4px rgba(0,0,0,0.6);cursor:pointer;position:relative;transition:transform 0.1s; }
+  .shutter::after { content:'';position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle,#2a2a2a,#1a1a1a);box-shadow:inset 0 1px 3px rgba(0,0,0,0.8); }
+  .shutter:active,.shutter.click { transform:scale(0.9); }
+  .device-led2 { width:7px;height:7px;border-radius:50%;background:#444; }
+  .photo-strip { position:absolute;right:-64px;top:50%;transform:translateY(-50%);width:58px;background:var(--white);border-radius:4px;padding:5px;box-shadow:0 12px 36px rgba(0,0,0,0.5);z-index:5; }
+  .strip-img { width:100%;aspect-ratio:1;border-radius:2px;overflow:hidden;margin-bottom:4px; }
+  .strip-img img { width:100%;height:100%;object-fit:cover; }
+  .strip-name { text-align:center;font-size:0.38rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--black);padding:3px 0;font-family:'Cormorant Garamond',serif; }
+  .device-glow { position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(196,163,90,0.18),transparent 70%);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;animation:glow 3s ease-in-out infinite; }
+  @keyframes glow { 0%,100%{opacity:0.6;transform:translate(-50%,-50%) scale(1)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)} }
+  .marquee { background:var(--gold);padding:13px 0;overflow:hidden; }
+  .marquee-inner { display:flex;animation:scroll 28s linear infinite;width:max-content; }
+  @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .m-item { display:flex;align-items:center;gap:10px;padding:0 36px;font-size:0.7rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--black);white-space:nowrap; }
+  .m-sep { font-size:0.5rem;opacity:0.5; }
+  section { padding:110px 6%; }
+  .section-tag { display:inline-flex;align-items:center;gap:12px;font-size:0.7rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:20px; }
+  .section-tag::before { content:'';width:30px;height:1px;background:var(--gold); }
+  .section-heading { font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.5rem);font-weight:400;line-height:1.12;margin-bottom:20px; }
+  .section-body { font-size:0.95rem;line-height:1.85;color:var(--grey-md);font-weight:300; }
+  .gold-line { width:60px;height:1px;background:var(--gold);margin:28px 0; }
+  .r { opacity:0;transform:translateY(32px);transition:opacity 0.8s ease,transform 0.8s ease; }
+  .r.in { opacity:1;transform:none; }
+  .r.d1{transition-delay:0.1s} .r.d2{transition-delay:0.2s} .r.d3{transition-delay:0.3s} .r.d4{transition-delay:0.4s} .r.d5{transition-delay:0.5s}
+  #about { background:var(--grey); }
+  .about-wrap { max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center; }
+  .about-img-col { position:relative; }
+  .about-main { width:100%;border-radius:2px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 30px 60px rgba(0,0,0,0.12); }
+  .about-main img { width:100%;height:100%;object-fit:cover; }
+  .about-badge { position:absolute;bottom:-28px;right:-28px;width:140px;height:140px;background:var(--black);border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 16px 40px rgba(0,0,0,0.25);border:1px solid rgba(196,163,90,0.2); }
+  .about-badge .b-num { font-family:'Cormorant Garamond',serif;font-size:2.2rem;color:var(--gold);line-height:1; }
+  .about-badge .b-txt { font-size:0.62rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center; }
+  .about-stats { display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin:36px 0; }
+  .a-stat { padding:24px 20px;background:var(--white);text-align:center;transition:background 0.3s; }
+  .a-stat:hover { background:var(--black); }
+  .a-stat:hover .a-val,.a-stat:hover .a-lbl { color:var(--gold); }
+  .a-val { font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--black);line-height:1;transition:color 0.3s; }
+  .a-lbl { font-size:0.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-md);margin-top:6px;transition:color 0.3s; }
+  #packages { background:var(--black); }
+  .pkg-header { text-align:center;margin-bottom:70px; }
+  .pkg-grid { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2px; }
+  .pkg { padding:50px 36px;background:#111;position:relative;transition:background 0.4s; }
+  .pkg:hover { background:#161616; }
+  .pkg.featured { background:var(--white);padding-top:60px; }
+  .pkg.featured:hover { background:#f8f7f5; }
+  .pkg-top-bar { position:absolute;top:0;left:0;right:0;height:2px;background:transparent; }
+  .pkg.featured .pkg-top-bar { background:var(--gold); }
+  .pkg-label { position:absolute;top:20px;right:20px;background:var(--gold);color:var(--black);font-size:0.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;display:none; }
+  .pkg.featured .pkg-label { display:block; }
+  .pkg-icon { font-size:1.6rem;margin-bottom:20px; }
+  .pkg-name { font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:500;color:var(--white);margin-bottom:6px; }
+  .pkg.featured .pkg-name { color:var(--black); }
+  .pkg-desc { font-size:0.82rem;color:rgba(255,255,255,0.4);margin-bottom:28px;font-weight:300; }
+  .pkg.featured .pkg-desc { color:var(--grey-md); }
+  .pkg-price { display:flex;align-items:flex-start;gap:4px;margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.07); }
+  .pkg.featured .pkg-price { border-bottom-color:rgba(0,0,0,0.08); }
+  .pkg-currency { font-size:1.1rem;color:var(--gold);margin-top:8px;font-weight:500; }
+  .pkg-amount { font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-weight:300;color:var(--white);line-height:1; }
+  .pkg.featured .pkg-amount { color:var(--black); }
+  .pkg-feats { list-style:none;margin-bottom:36px; }
+  .pkg-feats li { display:flex;align-items:center;gap:12px;font-size:0.85rem;font-weight:300;color:rgba(255,255,255,0.6);padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+  .pkg-feats li:last-child { border-bottom:none; }
+  .pkg-feats .chk { color:var(--gold);font-size:0.7rem; }
+  .pkg-btn { display:block;width:100%;text-align:center;padding:14px;font-size:0.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;cursor:pointer;border:none;transition:all 0.3s; }
+  .pkg .pkg-btn { background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.12); }
+  .pkg .pkg-btn:hover { border-color:var(--gold);color:var(--gold); }
+  .pkg.featured .pkg-btn { background:var(--black);color:var(--white); }
+  .pkg.featured .pkg-btn:hover { background:var(--gold);color:var(--black); }
+  #gallery { background:var(--white);padding-bottom:0; }
+  .gallery-head { max-width:600px;margin-bottom:60px; }
+  .gallery-grid { display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:340px 340px;gap:3px; }
+  .g-item { overflow:hidden;position:relative;cursor:pointer;background:#111; }
+  .g-item:first-child { grid-row:span 2; }
+  .g-item img { width:100%;height:100%;object-fit:cover;transition:transform 0.7s ease,filter 0.4s;filter:grayscale(20%); }
+  .g-item:hover img { transform:scale(1.06);filter:grayscale(0%); }
+  .g-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%);opacity:0;transition:opacity 0.4s;display:flex;align-items:flex-end;padding:20px; }
+  .g-item:hover .g-overlay { opacity:1; }
+  .g-label { font-size:0.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--white); }
+  .g-line { display:block;width:0;height:1px;background:var(--gold);transition:width 0.5s 0.1s ease;margin-bottom:6px; }
+  .g-item:hover .g-line { width:28px; }
+  #features { background:var(--grey); }
+  .feat-head { text-align:center;max-width:560px;margin:0 auto 70px; }
+  .feat-grid { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2px; }
+  .feat-card { background:var(--white);padding:42px 36px;transition:background 0.4s;position:relative;overflow:hidden; }
+  .feat-card::after { content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.4s ease; }
+  .feat-card:hover { background:var(--black); }
+  .feat-card:hover::after { transform:scaleX(1); }
+  .feat-card:hover .feat-icon-wrap { background:var(--gold); }
+  .feat-card:hover .feat-title { color:var(--white); }
+  .feat-card:hover .feat-txt { color:rgba(255,255,255,0.45); }
+  .feat-icon-wrap { width:50px;height:50px;background:var(--grey);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:22px;transition:background 0.4s; }
+  .feat-title { font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:500;margin-bottom:12px;transition:color 0.4s; }
+  .feat-txt { font-size:0.85rem;line-height:1.8;color:var(--grey-md);font-weight:300;transition:color 0.4s; }
+  #reviews { background:var(--black); }
+  .reviews-head { text-align:center;margin-bottom:70px; }
+  .reviews-head .section-heading { color:var(--white); }
+  .g-badge { display:inline-flex;align-items:center;gap:16px;border:1px solid rgba(196,163,90,0.2);padding:16px 28px;margin-top:24px;background:rgba(196,163,90,0.04); }
+  .g-score-big { font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--white);line-height:1; }
+  .g-divider { width:1px;height:40px;background:rgba(255,255,255,0.1); }
+  .g-detail .stars { color:var(--gold);letter-spacing:2px;font-size:0.9rem; }
+  .g-detail .count { font-size:0.72rem;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-top:4px; }
+  .reviews-grid { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2px; }
+  .r-card { background:#111;padding:40px 32px;transition:background 0.3s;position:relative; }
+  .r-card:hover { background:#161616; }
+  .r-card::before { content:'"';font-family:'Cormorant Garamond',serif;font-size:6rem;font-weight:300;color:var(--gold);opacity:0.15;position:absolute;top:16px;left:24px;line-height:1; }
+  .r-stars { color:var(--gold);font-size:0.75rem;letter-spacing:2px;margin-bottom:18px; }
+  .r-text { font-family:'Cormorant Garamond',serif;font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,0.65);font-weight:300;margin-bottom:28px;font-style:italic; }
+  .r-author { display:flex;align-items:center;gap:14px; }
+  .r-avatar { width:40px;height:40px;border-radius:50%;background:var(--grey-dk);display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:600;color:var(--gold);border:1px solid rgba(196,163,90,0.2);flex-shrink:0; }
+  .r-name { font-size:0.85rem;font-weight:600;color:var(--white); }
+  .r-event { font-size:0.72rem;color:rgba(255,255,255,0.3);margin-top:2px;letter-spacing:0.5px; }
+  #cta { background:var(--white);text-align:center;border-top:1px solid rgba(0,0,0,0.06);padding:130px 6%;position:relative;overflow:hidden; }
+  #cta::before { content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(196,163,90,0.06) 0%,transparent 70%);pointer-events:none; }
+  .cta-wrap { position:relative;z-index:1;max-width:640px;margin:0 auto; }
+  .cta-cam { font-size:2.2rem;margin-bottom:24px;display:block; }
+  .cta-title { font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.8rem);font-weight:300;line-height:1.1;margin-bottom:18px; }
+  .cta-title em { font-style:italic;color:var(--gold); }
+  .cta-sub { font-size:0.95rem;color:var(--grey-md);line-height:1.8;font-weight:300;margin-bottom:44px; }
+  .cta-btns { display:flex;gap:14px;justify-content:center;flex-wrap:wrap; }
+  .btn-filled { display:inline-flex;align-items:center;gap:10px;background:var(--black);color:var(--white);padding:15px 34px;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;transition:background 0.3s,transform 0.3s; }
+  .btn-filled:hover { background:var(--gold);color:var(--black);transform:translateY(-2px); }
+  .btn-outline { display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--black);padding:15px 34px;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid rgba(0,0,0,0.2);transition:border-color 0.3s,color 0.3s;cursor:pointer; }
+  .btn-outline:hover { border-color:var(--gold);color:var(--gold); }
+  #contact { background:var(--grey); }
+  .contact-wrap { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1.3fr;gap:70px;align-items:start; }
+  .contact-list { margin-top:36px;display:flex;flex-direction:column;gap:2px; }
+  .c-row { display:flex;align-items:center;gap:20px;background:var(--white);padding:20px 24px;text-decoration:none;color:inherit;transition:background 0.3s; }
+  .c-row:hover { background:var(--black); }
+  .c-row:hover .c-icon { color:var(--gold); }
+  .c-row:hover .c-title,.c-row:hover .c-val { color:var(--white); }
+  .c-icon { font-size:1.1rem;width:36px;text-align:center;color:var(--gold);flex-shrink:0;transition:color 0.3s; }
+  .c-title { font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-md);margin-bottom:3px;transition:color 0.3s; }
+  .c-val { font-size:0.9rem;font-weight:500;color:var(--black);transition:color 0.3s; }
+  .contact-form-box { background:var(--white);padding:50px 44px; }
+  .contact-form-box h3 { font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;margin-bottom:6px; }
+  .contact-form-box p { font-size:0.85rem;color:var(--grey-md);margin-bottom:30px;font-weight:300; }
+  .f-row { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px; }
+  .f-group { margin-bottom:14px; }
+  .f-group label { display:block;font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-md);margin-bottom:8px; }
+  .f-group input,.f-group textarea,.f-group select { width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.1);background:var(--grey);font-family:'Inter',sans-serif;font-size:0.9rem;color:var(--black);outline:none;border-radius:0;transition:border-color 0.3s,background 0.3s;-webkit-appearance:none; }
+  .f-group input:focus,.f-group textarea:focus,.f-group select:focus { border-color:var(--gold);background:var(--white); }
+  .f-group textarea { resize:vertical;min-height:110px; }
+  .btn-form { width:100%;padding:15px;background:var(--black);color:var(--white);border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;transition:background 0.3s;margin-top:6px; }
+  .btn-form:hover { background:var(--gold);color:var(--black); }
+  #form-ok { display:none;text-align:center;padding:40px 20px;border:1px solid rgba(196,163,90,0.3);background:rgba(196,163,90,0.04);margin-top:20px; }
+  #form-ok .ok-icon { font-size:2rem;margin-bottom:12px; }
+  #form-ok h4 { font-family:'Cormorant Garamond',serif;font-size:1.5rem;margin-bottom:8px; }
+  #form-ok p { font-size:0.85rem;color:var(--grey-md); }
+  footer { background:var(--black);padding:70px 6% 30px; }
+  .footer-grid { max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:60px;padding-bottom:50px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:30px; }
+  .f-brand .nav-logo { display:inline-flex;margin-bottom:18px; }
+  .f-brand p { font-size:0.85rem;line-height:1.8;color:rgba(255,255,255,0.4);font-weight:300;max-width:260px; }
+  .f-socials { display:flex;gap:10px;margin-top:24px; }
+  .f-social { width:38px;height:38px;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.5);text-decoration:none;transition:border-color 0.3s,color 0.3s; }
+  .f-social:hover { border-color:var(--gold);color:var(--gold); }
+  .f-col h5 { font-size:0.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:20px; }
+  .f-col ul { list-style:none; }
+  .f-col ul li { margin-bottom:12px; }
+  .f-col ul li a { font-size:0.85rem;color:rgba(255,255,255,0.35);text-decoration:none;font-weight:300;transition:color 0.3s; }
+  .f-col ul li a:hover { color:var(--gold); }
+  .footer-bottom { max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px; }
+  .footer-bottom span { font-size:0.78rem;color:rgba(255,255,255,0.25); }
+  .footer-bottom a { color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.3s; }
+  .footer-bottom a:hover { color:var(--gold); }
+  @media(max-width:960px){
+    .hero-content{grid-template-columns:1fr;gap:60px;text-align:center}
+    .hero-sub{margin:0 auto 44px}
+    .hero-actions{justify-content:center}
+    .hero-numbers{justify-content:center}
+    .hero-device-wrap{order:-1}
+    .photo-strip{right:-54px;width:50px}
+    .about-wrap{grid-template-columns:1fr;gap:60px}
+    .about-badge{right:10px;bottom:-20px;width:110px;height:110px}
+    .pkg-grid{grid-template-columns:1fr;max-width:420px;margin:0 auto}
+    .gallery-grid{grid-template-rows:280px 280px}
+    .feat-grid{grid-template-columns:1fr 1fr}
+    .reviews-grid{grid-template-columns:1fr;max-width:500px;margin:0 auto}
+    .contact-wrap{grid-template-columns:1fr}
+    .footer-grid{grid-template-columns:1fr;gap:36px}
+    .nav-links{display:none}
+    .hamburger{display:flex}
+  }
+  @media(max-width:600px){
+    section{padding:80px 5%}
+    .gallery-grid{grid-template-columns:1fr;grid-template-rows:auto}
+    .g-item:first-child{grid-row:span 1}
+    .g-item{height:280px}
+    .feat-grid{grid-template-columns:1fr}
+    .f-row{grid-template-columns:1fr}
+    .contact-form-box{padding:30px 24px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="flash"></div>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+<div class="mobile-menu" id="mob">
+  <button class="mobile-close" onclick="closeMob()">✕</button>
+  <a href="#about" onclick="closeMob()">Über uns</a>
+  <a href="#packages" onclick="closeMob()">Pakete</a>
+  <a href="#gallery" onclick="closeMob()">Galerie</a>
+  <a href="#features" onclick="closeMob()">Leistungen</a>
+  <a href="#reviews" onclick="closeMob()">Bewertungen</a>
+  <a href="#contact" onclick="closeMob()">Kontakt</a>
+</div>
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <img src="https://yaselfotobox.de/wp-content/uploads/2025/10/WhatsApp-Image-2025-11-27-at-01.00.09-150x150.jpeg" alt="Yaself Logo">
+    <span>Yaself Fotobox</span>
+  </a>
+  <div class="nav-links">
+    <a href="#about">Über uns</a>
+    <a href="#packages">Pakete</a>
+    <a href="#gallery">Galerie</a>
+    <a href="#features">Leistungen</a>
+    <a href="#reviews">Bewertungen</a>
+    <a href="https://wa.me/4917686660050" target="_blank" class="nav-btn">Anfragen</a>
+  </div>
+  <div class="hamburger" id="ham" onclick="openMob()"><span></span><span></span><span></span></div>
+</nav>
+<section id="hero">
+  <div class="hero-lines">
+    <div class="hero-line" style="left:15%;width:1px;top:0;bottom:0;"></div>
+    <div class="hero-line" style="left:35%;width:1px;top:0;bottom:0;opacity:0.5;animation-delay:3s"></div>
+    <div class="hero-line" style="left:65%;width:1px;top:0;bottom:0;opacity:0.3;animation-delay:6s"></div>
+    <div class="hero-line" style="left:85%;width:1px;top:0;bottom:0;opacity:0.5;animation-delay:9s"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-eyebrow"><div class="hero-eyebrow-line"></div><span>Premium Fotobox · NRW</span></div>
+      <h1 class="hero-title">Die Fotobox,<br>über die alle<br><em>reden.</em></h1>
+      <p class="hero-sub">Canon DSLR · Sofortdruck · Online-Galerie.<br>Für Hochzeiten, Geburtstage &amp; Events in ganz Nordrhein-Westfalen.</p>
+      <div class="hero-actions">
+        <a href="https://wa.me/4917686660050?text=Hallo!%20Ich%20möchte%20eine%20Fotobox%20anfragen." target="_blank" class="btn-dark">WhatsApp anfragen</a>
+        <a href="#packages" class="btn-outline-white">Pakete ansehen</a>
+      </div>
+      <div class="hero-numbers">
+        <div class="hero-num"><div class="val" data-target="1000">0<em>+</em></div><div class="key">Events</div></div>
+        <div class="hero-num"><div class="val" data-target="650">0<em>K+</em></div><div class="key">Fotos gedruckt</div></div>
+        <div class="hero-num"><div class="val">5.0<em>★</em></div><div class="key">Bewertung</div></div>
+      </div>
+    </div>
+    <div class="hero-device-wrap">
+      <div style="position:relative;">
+        <div class="device-glow"></div>
+        <div class="device" id="device">
+          <div class="device-screen">
+            <img id="scrImg" src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Event">
+            <div class="device-flash" id="devFlash"></div>
+          </div>
+          <div class="device-footer">
+            <div class="device-led"></div>
+            <button class="shutter" id="shutterBtn" onclick="shoot()" title="Foto aufnehmen"></button>
+            <div class="device-led2"></div>
+          </div>
+        </div>
+        <div class="photo-strip">
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt=""></div>
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt=""></div>
+          <div class="strip-img"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt=""></div>
+          <div class="strip-name">Yaself</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="marquee">
+  <div class="marquee-inner">
+    <div class="m-item">Hochzeiten <span class="m-sep">◆</span></div><div class="m-item">Geburtstage <span class="m-sep">◆</span></div><div class="m-item">Firmenfeiern <span class="m-sep">◆</span></div><div class="m-item">Verlobungen <span class="m-sep">◆</span></div><div class="m-item">Partys <span class="m-sep">◆</span></div><div class="m-item">Babyshower <span class="m-sep">◆</span></div><div class="m-item">Abschlüsse <span class="m-sep">◆</span></div><div class="m-item">Sofortdruck <span class="m-sep">◆</span></div>
+    <div class="m-item">Hochzeiten <span class="m-sep">◆</span></div><div class="m-item">Geburtstage <span class="m-sep">◆</span></div><div class="m-item">Firmenfeiern <span class="m-sep">◆</span></div><div class="m-item">Verlobungen <span class="m-sep">◆</span></div><div class="m-item">Partys <span class="m-sep">◆</span></div><div class="m-item">Babyshower <span class="m-sep">◆</span></div><div class="m-item">Abschlüsse <span class="m-sep">◆</span></div><div class="m-item">Sofortdruck <span class="m-sep">◆</span></div>
+  </div>
+</div>
+<section id="about">
+  <div class="about-wrap">
+    <div class="about-img-col r">
+      <div class="about-main"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt="Yaself Fotobox"></div>
+      <div class="about-badge"><div class="b-num">5★</div><div class="b-txt">Top<br>Bewertung</div></div>
+    </div>
+    <div class="about-text">
+      <div class="section-tag r">Über uns</div>
+      <h2 class="section-heading r d1">Dein Moment.<br>Unser Handwerk.</h2>
+      <div class="gold-line r d2"></div>
+      <p class="section-body r d2">Yaself Fotobox steht für unvergessliche Erinnerungen. Mit professioneller Canon DSLR-Technologie, Studiolicht und 8-Sekunden-Thermodruck bieten wir Premium-Qualität bei jedem Event in Nordrhein-Westfalen.</p>
+      <p class="section-body r d3" style="margin-top:14px;">Persönlich. Präzise. Unvergesslich.</p>
+      <div class="about-stats r d4">
+        <div class="a-stat"><div class="a-val" data-target="1000">0+</div><div class="a-lbl">Events</div></div>
+        <div class="a-stat"><div class="a-val" data-target="650">0K+</div><div class="a-lbl">Fotos</div></div>
+        <div class="a-stat"><div class="a-val">150km</div><div class="a-lbl">Lieferung</div></div>
+      </div>
+      <div class="r d5"><a href="#packages" class="btn-filled">Pakete entdecken</a></div>
+    </div>
+  </div>
+</section>
+<section id="packages">
+  <div class="pkg-header r">
+    <div class="section-tag" style="justify-content:center;">Preise &amp; Pakete</div>
+    <h2 class="section-heading" style="color:var(--white);">Für jeden Event<br>das richtige Paket.</h2>
+  </div>
+  <div class="pkg-grid">
+    <div class="pkg r d1">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-icon">◇</div>
+      <div class="pkg-name">Silber Basic</div>
+      <div class="pkg-desc">Ideal für kleinere Events</div>
+      <div class="pkg-price"><span class="pkg-currency">€</span><span class="pkg-amount">239</span></div>
+      <ul class="pkg-feats">
+        <li><span class="chk">◆</span> 3 Stunden Laufzeit</li>
+        <li><span class="chk">◆</span> Lieferung bis 20 km</li>
+        <li><span class="chk">◆</span> 200 Fotos inklusive</li>
+        <li><span class="chk">◆</span> Online-Galerie</li>
+        <li><span class="chk">◆</span> Individuelles Layout</li>
+        <li><span class="chk">◆</span> Auf- &amp; Abbau inklusive</li>
+      </ul>
+      <a href="https://wa.me/4917686660050?text=Silber%20Basic%20Paket%20anfragen" target="_blank" class="pkg-btn">Anfragen</a>
+    </div>
+    <div class="pkg featured r d2">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-label">Beliebt</div>
+      <div class="pkg-icon" style="color:var(--gold);">◈</div>
+      <div class="pkg-name" style="color:var(--black);">Gold Plus</div>
+      <div class="pkg-desc" style="color:var(--grey-md);">Unser Bestseller</div>
+      <div class="pkg-price"><span class="pkg-currency">€</span><span class="pkg-amount" style="color:var(--black);">299</span></div>
+      <ul class="pkg-feats">
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> 5 Stunden Laufzeit</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Lieferung bis 30 km</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> 400 Fotos inklusive</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Online-Galerie</li>
+        <li style="color:var(--grey-dk);border-bottom-color:rgba(0,0,0,0.06)"><span class="chk">◆</span> Individuelles Layout</li>
+        <li style="color:var(--grey-dk);"><span class="chk">◆</span> Studio-Beleuchtung</li>
+      </ul>
+      <a href="https://wa.me/4917686660050?text=Gold%20Plus%20Paket%20anfragen" target="_blank" class="pkg-btn" style="background:var(--black);color:var(--white);">Jetzt buchen</a>
+    </div>
+    <div class="pkg r d3">
+      <div class="pkg-top-bar"></div>
+      <div class="pkg-icon">◉</div>
+      <div class="pkg-name">Premium All-In</div>
+      <div class="pkg-desc">Das volle Erlebnis</div>
+      <div class="pkg-price"><span class="pkg-currency">€</span><span class="pkg-amount">369</span></div>
+      <ul class="pkg-feats">
+        <li><span class="chk">◆</span> 7 Stunden Laufzeit</li>
+        <li><span class="chk">◆</span> Lieferung bis 40 km</li>
+        <li><span class="chk">◆</span> Unbegrenzte Fotos</li>
+        <li><span class="chk">◆</span> Online-Galerie</li>
+        <li><span class="chk">◆</span> Premium-Layout</li>
+        <li><span class="chk">◆</span> Alles inklusive</li>
+      </ul>
+      <a href="https://wa.me/4917686660050?text=Premium%20All-In%20Paket%20anfragen" target="_blank" class="pkg-btn">Anfragen</a>
+    </div>
+  </div>
+</section>
+<section id="gallery">
+  <div class="gallery-head">
+    <div class="section-tag r">Galerie</div>
+    <h2 class="section-heading r d1">Echte Momente,<br>echte Erinnerungen.</h2>
+  </div>
+  <div class="gallery-grid">
+    <div class="g-item r"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg" alt="Hochzeit"><div class="g-overlay"><div><span class="g-line"></span><span class="g-label">Hochzeit · Dinslaken</span></div></div></div>
+    <div class="g-item r d1"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Party"><div class="g-overlay"><div><span class="g-line"></span><span class="g-label">Party · Oberhausen</span></div></div></div>
+    <div class="g-item r d2"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg" alt="Geburtstag"><div class="g-overlay"><div><span class="g-line"></span><span class="g-label">Geburtstag · Moers</span></div></div></div>
+    <div class="g-item r d3"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg" alt="Setup"><div class="g-overlay"><div><span class="g-line"></span><span class="g-label">Premium Setup</span></div></div></div>
+    <div class="g-item r d4"><img src="https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg" alt="Gruppe"><div class="g-overlay"><div><span class="g-line"></span><span class="g-label">Gruppenfotos</span></div></div></div>
+  </div>
+</section>
+<section id="features">
+  <div class="feat-head">
+    <div class="section-tag r">Leistungen</div>
+    <h2 class="section-heading r d1">Alles inklusive.<br>Nichts dem Zufall überlassen.</h2>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card r"><div class="feat-icon-wrap">📷</div><h3 class="feat-title">Canon DSLR</h3><p class="feat-txt">Professionelle Kamera mit Studiolicht für brillante Bildqualität – bei jedem Licht, bei jedem Event.</p></div>
+    <div class="feat-card r d1"><div class="feat-icon-wrap">🖨️</div><h3 class="feat-title">8-Sek. Sofortdruck</h3><p class="feat-txt">10 × 15 cm Thermopapier-Druck in nur 8 Sekunden. Deine Gäste nehmen echte Fotos mit nach Hause.</p></div>
+    <div class="feat-card r d2"><div class="feat-icon-wrap">🖥️</div><h3 class="feat-title">15" Touchscreen</h3><p class="feat-txt">Live-Vorschau auf dem großen Touchscreen – intuitiv und kinderleicht bedienbar für jeden.</p></div>
+    <div class="feat-card r d3"><div class="feat-icon-wrap">🎨</div><h3 class="feat-title">Individuelles Layout</h3><p class="feat-txt">Jedes Layout wird auf dein Event abgestimmt – mit deinem Namen, Datum und eigenem Design.</p></div>
+    <div class="feat-card r d4"><div class="feat-icon-wrap">🔒</div><h3 class="feat-title">Online-Galerie</h3><p class="feat-txt">Passwortgeschützte digitale Galerie – alle Fotos sicher zugänglich für dich und deine Gäste.</p></div>
+    <div class="feat-card r d5"><div class="feat-icon-wrap">🚚</div><h3 class="feat-title">Lieferung &amp; Service</h3><p class="feat-txt">Lieferung, Aufbau und Abbau komplett inklusive. Wir kommen bis zu 150 km in ganz NRW.</p></div>
+  </div>
+</section>
+<section id="reviews">
+  <div class="reviews-head r">
+    <div class="section-tag" style="justify-content:center;">Kundenstimmen</div>
+    <h2 class="section-heading">Was unsere Kunden sagen.</h2>
+    <div class="g-badge"><div class="g-score-big">5.0</div><div class="g-divider"></div><div class="g-detail"><div class="stars">★★★★★</div><div class="count">Verifizierte Bewertungen</div></div></div>
+  </div>
+  <div class="reviews-grid">
+    <div class="r-card r d1"><div class="r-stars">★★★★★</div><p class="r-text">Absolut begeistert! Die Fotobox war der Hit auf unserer Hochzeit. Alle Gäste haben sich davor angestellt und die Fotos waren in Sekunden fertig.</p><div class="r-author"><div class="r-avatar">S</div><div><div class="r-name">Sarah M.</div><div class="r-event">Hochzeit · Dinslaken</div></div></div></div>
+    <div class="r-card r d2"><div class="r-stars">★★★★★</div><p class="r-text">Toller Service, superschnelle Antwort und die Fotobox selbst ist einfach der Hammer. Alle Gäste haben geschwärmt. Klare Empfehlung!</p><div class="r-author"><div class="r-avatar">K</div><div><div class="r-name">Kevin T.</div><div class="r-event">Geburtstag · Oberhausen</div></div></div></div>
+    <div class="r-card r d3"><div class="r-stars">★★★★★</div><p class="r-text">Wir kamen extra aus Köln – es hat sich mehr als gelohnt. Professionelles Equipment, freundlicher Service. Die Online-Galerie war ein tolles Extra.</p><div class="r-author"><div class="r-avatar">L</div><div><div class="r-name">Lena R.</div><div class="r-event">Firmenfeier · Moers</div></div></div></div>
+  </div>
+</section>
+<section id="cta">
+  <div class="cta-wrap">
+    <span class="cta-cam r">◎</span>
+    <h2 class="cta-title r d1">Bereit für<br><em>unvergessliche</em><br>Momente?</h2>
+    <p class="cta-sub r d2">Schreib uns auf WhatsApp oder ruf an – wir antworten noch am selben Tag und machen dein Event unvergesslich.</p>
+    <div class="cta-btns r d3">
+      <a href="https://wa.me/4917686660050?text=Hallo!%20Ich%20möchte%20eine%20Fotobox%20buchen." target="_blank" class="btn-filled">WhatsApp schreiben</a>
+      <a href="tel:+491784561907" class="btn-outline">+49 178 456 1907</a>
+    </div>
+  </div>
+</section>
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="contact-info">
+      <div class="section-tag r">Kontakt</div>
+      <h2 class="section-heading r d1">Schreib uns<br>einfach an.</h2>
+      <div class="gold-line r d2"></div>
+      <p class="section-body r d2">Wir freuen uns auf deine Anfrage und melden uns noch am selben Tag.</p>
+      <div class="contact-list">
+        <a href="https://wa.me/4917686660050" target="_blank" class="c-row r d1"><span class="c-icon">💬</span><div><div class="c-title">WhatsApp</div><div class="c-val">+49 176 8666 0050</div></div></a>
+        <a href="tel:+491784561907" class="c-row r d2"><span class="c-icon">📞</span><div><div class="c-title">Telefon</div><div class="c-val">+49 178 456 1907</div></div></a>
+        <a href="mailto:yaselfotobox@web.de" class="c-row r d3"><span class="c-icon">✉</span><div><div class="c-title">E-Mail</div><div class="c-val">yaselfotobox@web.de</div></div></a>
+        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="c-row r d4"><span class="c-icon">◎</span><div><div class="c-title">Instagram</div><div class="c-val">@yaselfotobox</div></div></a>
+        <div class="c-row r d5" style="cursor:default;"><span class="c-icon">⬡</span><div><div class="c-title">Servicegebiet</div><div class="c-val">Duisburg &amp; ganz NRW · bis 150 km</div></div></div>
+      </div>
+    </div>
+    <div class="contact-form-box r d1">
+      <h3>Anfrage senden</h3>
+      <p>Wir antworten innerhalb weniger Stunden.</p>
+      <form id="cForm" onsubmit="sendForm(event)">
+        <div class="f-row">
+          <div class="f-group"><label for="nm">Name *</label><input type="text" id="nm" placeholder="Max Mustermann" required></div>
+          <div class="f-group"><label for="ph">Telefon / WhatsApp</label><input type="tel" id="ph" placeholder="+49 ..."></div>
+        </div>
+        <div class="f-group"><label for="em">E-Mail *</label><input type="email" id="em" placeholder="deine@email.de" required></div>
+        <div class="f-row">
+          <div class="f-group"><label for="dt">Event-Datum *</label><input type="date" id="dt" required></div>
+          <div class="f-group"><label for="pk">Paket</label><select id="pk"><option value="">Bitte wählen …</option><option>Silber Basic – 239 €</option><option>Gold Plus – 299 €</option><option>Premium All-In – 369 €</option></select></div>
+        </div>
+        <div class="f-group"><label for="msg">Nachricht</label><textarea id="msg" placeholder="Anlass, Ort, Gästeanzahl …"></textarea></div>
+        <button type="submit" class="btn-form">Anfrage absenden</button>
+      </form>
+      <div id="form-ok"><div class="ok-icon">◎</div><h4>Anfrage erhalten!</h4><p>Wir melden uns so schnell wie möglich bei dir.</p></div>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-grid">
+    <div class="f-brand">
+      <a href="#" class="nav-logo"><img src="https://yaselfotobox.de/wp-content/uploads/2025/10/WhatsApp-Image-2025-11-27-at-01.00.09-150x150.jpeg" alt="Logo"><span>Yaself Fotobox</span></a>
+      <p>Die Fotobox, über die alle reden. Premium-Fotobox-Verleih in ganz Nordrhein-Westfalen.</p>
+      <div class="f-socials">
+        <a href="https://www.instagram.com/yaselfotobox" target="_blank" class="f-social">◎</a>
+        <a href="https://wa.me/4917686660050" target="_blank" class="f-social">◈</a>
+        <a href="tel:+491784561907" class="f-social">◉</a>
+      </div>
+    </div>
+    <div class="f-col"><h5>Pakete</h5><ul><li><a href="#packages">Silber Basic – 239 €</a></li><li><a href="#packages">Gold Plus – 299 €</a></li><li><a href="#packages">Premium All-In – 369 €</a></li></ul></div>
+    <div class="f-col"><h5>Rechtliches</h5><ul><li><a href="https://yaselfotobox.de/impressum/" target="_blank">Impressum</a></li><li><a href="https://yaselfotobox.de/datenschutz/" target="_blank">Datenschutz</a></li><li><a href="https://yaselfotobox.de/faq/" target="_blank">FAQ</a></li><li><a href="https://yaselfotobox.de/meine-galerie/" target="_blank">Galerie</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Yaself Fotobox — Handgemacht in Duisburg</span>
+    <span><a href="https://yaselfotobox.de/impressum/" target="_blank">Impressum</a> · <a href="https://yaselfotobox.de/datenschutz/" target="_blank">Datenschutz</a></span>
+  </div>
+</footer>
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function a(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,.pkg,.feat-card,.g-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';ring.style.width='50px';ring.style.height='50px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='8px';cur.style.height='8px';ring.style.width='34px';ring.style.height='34px';});
+});
+const nav=document.getElementById('nav'),prog=document.getElementById('progress');
+window.addEventListener('scroll',()=>{nav.classList.toggle('scrolled',scrollY>60);prog.style.transform=`scaleX(${scrollY/(document.body.scrollHeight-innerHeight)})`;});
+function openMob(){document.getElementById('mob').classList.add('open');}
+function closeMob(){document.getElementById('mob').classList.remove('open');}
+const imgs=['https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-hochzeit-dinslaken.jpg','https://yaselfotobox.de/wp-content/uploads/2026/04/party-fotobox-oberhausen-gruppenbild-gaeste-1-scaled.jpg','https://yaselfotobox.de/wp-content/uploads/2026/04/fotoautomat-geburtstag-moers-lachende-gaeste-scaled.jpg','https://yaselfotobox.de/wp-content/uploads/2026/04/fotobox-scaled.jpg'];
+let idx=0;
+const scrImg=document.getElementById('scrImg'),devFlash=document.getElementById('devFlash'),flashEl=document.getElementById('flash'),shutterBtn=document.getElementById('shutterBtn');
+function shoot(){shutterBtn.classList.add('click');devFlash.classList.add('on');flashEl.classList.add('on');setTimeout(()=>{idx=(idx+1)%imgs.length;scrImg.src=imgs[idx];devFlash.classList.remove('on');flashEl.classList.remove('on');shutterBtn.classList.remove('click');},180);}
+setInterval(shoot,3500);
+function countUp(el,target){const step=target/100;let c=0;const t=setInterval(()=>{c=Math.min(c+step,target);el.textContent=Math.floor(c).toLocaleString('de')+'+';if(c>=target)clearInterval(t);},16);}
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');if(e.target.dataset.target){countUp(e.target,+e.target.dataset.target);obs.unobserve(e.target);}}});},{threshold:0.12});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
+document.querySelectorAll('[data-target]').forEach(el=>obs.observe(el));
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{const id=a.getAttribute('href');if(id==='#')return;const t=document.querySelector(id);if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}});});
+function sendForm(e){e.preventDefault();const n=document.getElementById('nm').value,p=document.getElementById('ph').value,em=document.getElementById('em').value,d=document.getElementById('dt').value,pk=document.getElementById('pk').value,m=document.getElementById('msg').value;const txt=encodeURIComponent(`Anfrage\n\nName: ${n}\nTel: ${p}\nEmail: ${em}\nDatum: ${d}\nPaket: ${pk}\nNachricht: ${m}`);document.getElementById('cForm').style.display='none';document.getElementById('form-ok').style.display='block';setTimeout(()=>window.open(`https://wa.me/4917686660050?text=${txt}`,'_blank'),600);}
+</script>
+</body>
+</html>
